@@ -100,14 +100,4 @@ function notex(string) {
 	return consumeBlocks();
 }
 
-console.log(JSON.stringify(notex(`\\def A set $G$ is a *group* under a binary operation $\\cdot: G \\times G \\to G$
-	\\iff closure: $\\forall a,b \\in G: a \\cdot b \\in G$
-\\def An *abelian group* \\pred is a group whose operation is commutative. \\[
-	blah
-\\]
-\\thm If $|G|$ is prime, then $G$ is cyclic.
-\\thm *Lagrange's theorem:* $|H|$ divides $|G|$.
-Suppose we want to model $f$. Define an affine estimator with parameters $\\alpha$ and $\\beta$ \\[
-		f(x) = \\alpha + \\langle \\beta, \\vecb{x} \rangle
-	\\] where we the function as $f$.
-`), null, 4))
+module.exports = notex;
