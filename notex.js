@@ -1,4 +1,4 @@
-const EOL = '\r\n';
+const EOL = '\n';
 
 function notex(string) {
 	let position = 0;
@@ -19,8 +19,15 @@ function notex(string) {
 	function consumeBlocks(tabs=0) {
 		const objects = [];
 		while (position < string.length) {
-			if (consume('\t'.repeat(tabs)))
-				objects.push([consumeInlineUntil(EOL), consumeBlocks(tabs + 1)]);
+			if (consume('\t'.repeat(tabs))) {
+				const header = consumeInlineUntil(EOL);
+				const children = consumeBlocks(tabs + 1);
+				
+				if (header.length === 1) // Todo: check that this is a TAG instead
+					objects.push([header[0][0], header[0][1], children]);
+				else
+					objects.push(['PARAGRAPH', header, children]);
+			}
 			
 			// A new line.
 			//else if (consume('fewer than tabs \t + \n'))
@@ -49,7 +56,7 @@ function notex(string) {
 				objects.push(['MATH', consumeVerbatimUntil('$')]);
 			
 			else if (consume('\\['))
-				objects.push(['MATH_INLINE', consumeVerbatimUntil('\\]')]);
+				objects.push(['MATH_DISPLAY', consumeVerbatimUntil('\\]')]);
 			
 			// Bold.
 			else if (consume('*'))
@@ -95,7 +102,12 @@ function notex(string) {
 
 console.log(JSON.stringify(notex(`\\def A set $G$ is a *group* under a binary operation $\\cdot: G \\times G \\to G$
 	\\iff closure: $\\forall a,b \\in G: a \\cdot b \\in G$
-\\def An *abelian group* \\pred is a group whose operation is commutative.
+\\def An *abelian group* \\pred is a group whose operation is commutative. \\[
+	blah
+\\]
 \\thm If $|G|$ is prime, then $G$ is cyclic.
 \\thm *Lagrange's theorem:* $|H|$ divides $|G|$.
+Suppose we want to model $f$. Define an affine estimator with parameters $\\alpha$ and $\\beta$ \\[
+		f(x) = \\alpha + \\langle \\beta, \\vecb{x} \rangle
+	\\] where we the function as $f$.
 `), null, 4))
