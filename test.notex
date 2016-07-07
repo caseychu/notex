@@ -1,0 +1,51 @@
+\def A set $G$ is a *group* under a binary operation $\cdot: G \times G \to G$
+	\iff \forall a,b \in G: a \cdot b \in G (closure)
+
+\def An *abelian group* \pred is a group whose operation is commutative.
+\thm If $|G|$ is prime, then $G$ is cyclic.
+
+\thm *Lagrange's theorem:* $|H|$ divides $|G|$.
+
+\def A set $H$ is a *normal subgroup* of $G$
+	\iff $H \normalsubgroupof G$
+	\iff left cosets coincide with right cosets: $H \le G$, $\forall g \in G: gH = Hg$
+	\iff $H$ is invariant under conjugation: $H \le G$, $\forall g \in G: \forall h \in H: ghg^{-1} \in H$
+	\iff $H \le G$, $H$ is a union of conjugacy classes
+		\footnote this is always the case
+	\iff the set of cosets of $H$ forms a group, called the *quotient group*, $G/H = \{ Hg \st g \in G \}$, under the group operation $(Ha)(Hb) = H(ab)$ with the identity $H$
+	\if 
+	\then 
+
+\def $A \subseteq X$ and $B \subseteq X$ are *separated* \iff $\bar{A} \intersect B = A \intersect \bar{B} = \varnothing$.
+
+# Gradient descent of $f$
+	Suppose we want to minimize $f : \R^d \to \R$. The *gradient*.
+	
+	## Linear regression
+		Suppose we want to model $f$. Define an affine estimator with parameters $\alpha$ and $\beta$ \[
+				f(x) = \alpha + \langle \beta, \vecb{x} \rangle
+			\]
+			\footnote There is a problem here
+			where we the function as $f$.
+		
+		We want to minimize
+
+\thm $A \subseteq X$ and $B \subseteq X$ are *separated* \iff $\bar{A} \intersect B = A \intersect \bar{B} = \varnothing$.
+
+\list Personal pronouns
+	ég: I
+	þú: you
+	hann/hún/það: he/she/it
+	við: we
+	þið: you pl.
+	þeir/þær/þau: they
+
+
+	að vera (er/ert/er/erum/eruð/eru): to be
+	: to have
+	að gera: to do
+	að fara: to go
+	að segja: to say
+	að tala: to speak/talk
+	að finna: to find
+	að vinna: to work
