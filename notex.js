@@ -1,4 +1,4 @@
-const EOL = /\r\n|\r|\n/;
+const EOL = /\r\n|\r|\n|$/;
 
 const notex = {};
 notex.commands = [['', (head, children) => [head, children]]];
@@ -8,33 +8,26 @@ notex.inlineVerbatim = [];
 notex.parse = function (string) {
 	let position = 0;
 
-	function matchRegex(re) {
-		// Simulate a sticky regex
-		return (new RegExp('^(' + re.source + ')')).exec(string.substr(position));
-	}
-
-	function consumeRegex(re) {
-		const match = matchRegex(re);
-		if (match) {
-			position += match[0].length;
-			return match.slice(1);
-		}
-		return false;
-	}
-	
-	function consumeLiteral(substring) {
-		const matched = string.substr(position, substring.length) === substring;
-		if (matched)
-			position += substring.length;
-		return matched;
-	}
-
 	// Returns truthy iff successfully consumed the pattern.
 	function consume(pattern) {
-		if (typeof pattern === 'string')
-			return consumeLiteral(pattern)
-		else if (pattern instanceof RegExp)
-			return consumeRegex(pattern);
+		if (typeof pattern === 'string') {
+			if (pattern === string.substr(position, pattern.length)) {
+				position += pattern.length;
+				return true;
+			}
+			return false;
+		}
+		
+		else if (pattern instanceof RegExp) {
+			// Simulate a sticky regex
+			const match = (new RegExp('^(' + pattern.source + ')')).exec(string.substr(position));
+			if (match) {
+				position += match[0].length;
+				return match.slice(1);
+			}
+			return false;
+		}
+		
 		else
 			throw new Error('invalid object to consume');
 	}
@@ -43,6 +36,21 @@ notex.parse = function (string) {
 		const substring = string.substr(position, n);
 		position += substring.length;
 		return substring;
+	}
+	
+	function consumeVerbatimUntil(until) {
+		// Little microoptimization for strings, even though the else clause would work.
+		if (typeof until === 'string') {			
+			const verbatim = consumeN(string.indexOf(until, position) - position);
+			if (!consume(until))
+				throw new Error('something is wrong with the above calculation');
+			return verbatim;
+		} else {
+			let string = '';
+			while (!consume(until))
+				string += consumeN(1);
+			return string;
+		}
 	}
 	
 	function consumePatterns(patterns) {
@@ -84,14 +92,6 @@ notex.parse = function (string) {
 		
 		const objects = [];
 		while (!consume(until)) {
-			// Reached end of string.
-			if (position >= string.length) {
-				if (until === EOL)
-					break;
-				else
-					throw new SyntaxError('Unexpected end of file: expected character ' + until);
-			}
-		
 			const verbatimPattern = consumePatterns(notex.inlineVerbatim);
 			if (verbatimPattern) {
 				if (currentTextNode) {
@@ -126,20 +126,6 @@ notex.parse = function (string) {
 		}
 		
 		return objects;
-	}
-	function consumeVerbatimUntil(until) {
-		// Little microoptimization for strings, even though the else clause would work.
-		if (typeof until === 'string') {			
-			const verbatim = consumeN(string.indexOf(until, position) - position);
-			if (!consume(until))
-				throw new Error('something is wrong with the above calculation');
-			return verbatim;
-		} else {
-			let string = '';
-			while (!consume(until))
-				string += consumeN(1);
-			return string;
-		}
 	}
 	
 	return consumeBlocks();
