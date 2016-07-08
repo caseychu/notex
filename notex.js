@@ -68,12 +68,12 @@ notex.parse = function (string) {
 			if (consume('\t'.repeat(tabs))) {
 				const command = consumePatterns(notex.commands);
 				if (!command)
-					throw new Error('Couldn\'t parse tag');
+					throw new Error('There\'s no fallback tag, a rule like /^/');
 				
 				const [match, pattern, fn] = command;
-				const header = consumeInlineUntil(EOL);
+				const head = consumeInlineUntil(EOL);
 				const children = consumeBlocks(tabs + 1);
-				objects.push(fn(header, children, match));
+				objects.push(fn({ head, children, match }));
 			}
 			
 			// A new line.
@@ -92,27 +92,23 @@ notex.parse = function (string) {
 		
 		const objects = [];
 		while (!consume(until)) {
-			const verbatimPattern = consumePatterns(notex.inlineVerbatim);
-			if (verbatimPattern) {
+			const consumedPattern = consumePatterns(notex.inline);
+			if (consumedPattern) {
 				if (currentTextNode) {
 					objects.push(currentTextNode);
 					currentTextNode = '';
 				}
-			
-				const [leftMatch, leftPattern, rightPattern, fn] = verbatimPattern;
-				objects.push(fn(consumeVerbatimUntil(rightPattern), leftMatch));
-				continue;
-			}
-			
-			const inlinePattern = consumePatterns(notex.inline);
-			if (inlinePattern) {
-				if (currentTextNode) {
-					objects.push(currentTextNode);
-					currentTextNode = '';
+				
+				if (consumedPattern.length === 4) {
+					const [leftMatch, leftPattern, rightPattern, fn] = consumedPattern;
+					objects.push(fn({ children: consumeInlineUntil(rightPattern), match: leftMatch }));
+				} 
+				
+				else if (consumedPattern.length === 3) {
+					const [match, pattern, fn] = consumedPattern;
+					objects.push(fn({ match }));
 				}
-					
-				const [leftMatch, leftPattern, rightPattern, fn] = inlinePattern;
-				objects.push(fn(consumeInlineUntil(rightPattern), leftMatch));
+				
 				continue;
 			}
 			

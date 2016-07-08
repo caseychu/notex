@@ -24,7 +24,9 @@ Suppose we want to minimize $f : \mathbb{R}^d \to \mathbb{R}$. The gradient desc
 # Newton's method
 Suppose we want to find a zero of $f : \mathbb{R} \to \mathbb{R}$. Newton's method initializes a guess $x$ and then repeatedly sets $x$ to be the zero of the linear approximation of $f$ at $x$, i.e. repeatedly sets $x$ to be $x - \frac{f(x)}{f'(x)}$, until convergence.
 	
-Suppose we want to minimize or maximize $f : \mathbb{R}^d \to \mathbb{R}$. Then we can apply Newton's method to $\nabla f$, where we repeatedly set $\mathbf{x}$ to be $\mathbf{x} - \left(Hf(\mathbf{x}) \right)^{-1} \nabla f(\mathbf{x})$, where $Hf$ is the Hessian matrix of second derivatives.
+Suppose we want to minimize or maximize $f : \mathbb{R}^d \to \mathbb{R}$. Then we can apply Newton's method to $\nabla f$, where we repeatedly set \[
+	\mathbf{x} \leftarrow \mathbf{x} - \left(Hf(\mathbf{x}) \right)^{-1} \nabla f(\mathbf{x}),
+\] where $Hf$ is the Hessian matrix of second derivatives.
 
 We want to minimize the following:
 	- energy ($E$)
