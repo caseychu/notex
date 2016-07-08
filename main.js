@@ -24,7 +24,7 @@ notex.inline = {
 notex.commands = {
 	'#{1,6}': (head, children, type) => `
 		<h${type.length}>${ head.join('') }</h${type.length}>
-		<div style="margin-left: 1em">${ children.join('') }</div>`,
+		${ children.join('') }`,
 
 	'-': (head, children) => `
 		<div class="bullet">
