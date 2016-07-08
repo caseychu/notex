@@ -1,8 +1,13 @@
 const EOL = /\r\n|\r|\n/;
 
-const notex = {};
+function StringBuilder() {
+	
+}
 
-notex.commands = {};
+const notex = {};
+notex.commands = [[/()/, (head, children) => [head, children]]];
+notex.inline = [];
+notex.inlineVerbatim = [];
 
 notex.parse = function (string) {
 	let position = 0;
@@ -72,6 +77,8 @@ notex.parse = function (string) {
 	}
 	
 	function consumeInlineUntil(until) {
+		let currentTextNode = '';
+		
 		const objects = [];
 		while (!consumeRegex(until)) {
 			// Reached end of string.
@@ -84,6 +91,11 @@ notex.parse = function (string) {
 		
 			const verbatimPattern = consumePatterns(notex.inlineVerbatim);
 			if (verbatimPattern) {
+				if (currentTextNode) {
+					objects.push(currentTextNode);
+					currentTextNode = '';
+				}
+			
 				const [leftMatch, leftRegex, rightRegex, fn] = verbatimPattern;
 				objects.push(fn(consumeVerbatimUntilRegex(rightRegex), leftMatch));
 				continue;
@@ -91,14 +103,25 @@ notex.parse = function (string) {
 			
 			const inlinePattern = consumePatterns(notex.inline);
 			if (inlinePattern) {
+				if (currentTextNode) {
+					objects.push(currentTextNode);
+					currentTextNode = '';
+				}
+					
 				const [leftMatch, leftRegex, rightRegex, fn] = inlinePattern;
 				objects.push(fn(consumeInlineUntil(rightRegex), leftMatch));
 				continue;
 			}
 			
 			// Just text.
-			objects.push(consumeN(1));
+			currentTextNode += consumeN(1);
 		}
+
+		if (currentTextNode) {
+			objects.push(currentTextNode);
+			currentTextNode = '';
+		}
+		
 		return objects;
 	}
 	function consumeVerbatimUntilRegex(until) {

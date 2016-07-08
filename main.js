@@ -3,19 +3,6 @@ const notex = require('./notex.js');
 
 const katex = require('katex');
 
-
-const htmlentities = text => text; // shh
-const latex = text => text; // shh
-
-//renderer.registerTag('*', '*', children => `<b>${ children.join('') }</b>`);
-//renderer.registerTag('\\pred ', '\\n', children => `<b>${ children.join('') }</b>`);
-/*
-renderer.registerVerbatimTag('\\\\', '', _ => '\\');
-renderer.registerVerbatimTag('$', '$', text => `<tt>${ latex(text) }</tt>`);
-renderer.registerVerbatimTag('\\html{{', '}}', text => text);
-renderer.registerVerbatimTag('\\html{', '}', text => text);
-*/
-
 notex.inline = [
 	[/\*/, /\*/, children => `<b>${ children.join('') }</b>`]
 ];
@@ -50,14 +37,6 @@ notex.commands = [
 		</div>`],
 ];
 
-//notex.createNode = (type, children) => React.createElement(type, {}, children);
-//notex.createNode = (type, { text, children }) => <type text={text}>{ children }</type>;
-
-/*
-tags.set(['*', '*'], (children, render) => `\\textbf{${ render(children) }}`);
-
-tags.set('\\thm', (head, tail, render) => )*/
-
 const tree = notex.parse(fs.readFileSync(process.argv[2]).toString());
 console.log(`
 	<meta charset="utf-8" />
@@ -72,4 +51,3 @@ console.log(`
 	</style>
 `)
 console.log(tree.join(''));
-//console.log(JSON.stringify(tree, null, 2))
