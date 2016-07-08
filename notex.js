@@ -1,9 +1,5 @@
 const EOL = /\r\n|\r|\n/;
 
-function StringBuilder() {
-	
-}
-
 const notex = {};
 notex.commands = [[/()/, (head, children) => [head, children]]];
 notex.inline = [];
@@ -25,14 +21,20 @@ notex.parse = function (string) {
 		}
 		return false;
 	}
+	
+	function consumeLiteral(substring) {
+		const matched = string.substr(position, substring.length) === substring;
+		if (matched)
+			position += substring.length;
+		return matched;
+	}
 
-	function consume(substring) {
-		if (typeof substring === 'string') {
-			const matched = string.substr(position, substring.length) === substring;
-			if (matched)
-				position += substring.length;
-			return matched;
-		} else
+	function consume(pattern) {
+		if (typeof arg === 'string')
+			return consumeLiteral(pattern)
+		else if (arg instanceof RegExp)
+			return consumeRegex(pattern);
+		else
 			throw new Error('invalid object to consume');
 	}
 	
@@ -55,11 +57,11 @@ notex.parse = function (string) {
 		const objects = [];
 		while (position < string.length) {
 			if (consume('\t'.repeat(tabs))) {
-				const pattern = consumePatterns(notex.commands);
-				if (!pattern)
+				const command = consumePatterns(notex.commands);
+				if (!command)
 					throw new Error('Couldn\'t parse tag');
 				
-				const [match, regex, fn] = pattern;
+				const [match, pattern, fn] = command;
 				const header = consumeInlineUntil(EOL);
 				const children = consumeBlocks(tabs + 1);
 				objects.push(fn(header, children, match));
@@ -80,7 +82,7 @@ notex.parse = function (string) {
 		let currentTextNode = '';
 		
 		const objects = [];
-		while (!consumeRegex(until)) {
+		while (!consume(until)) {
 			// Reached end of string.
 			if (position >= string.length) {
 				if (until === EOL)
@@ -96,8 +98,8 @@ notex.parse = function (string) {
 					currentTextNode = '';
 				}
 			
-				const [leftMatch, leftRegex, rightRegex, fn] = verbatimPattern;
-				objects.push(fn(consumeVerbatimUntilRegex(rightRegex), leftMatch));
+				const [leftMatch, leftPattern, rightPattern, fn] = verbatimPattern;
+				objects.push(fn(consumeVerbatimUntil(rightPattern), leftMatch));
 				continue;
 			}
 			
@@ -108,8 +110,8 @@ notex.parse = function (string) {
 					currentTextNode = '';
 				}
 					
-				const [leftMatch, leftRegex, rightRegex, fn] = inlinePattern;
-				objects.push(fn(consumeInlineUntil(rightRegex), leftMatch));
+				const [leftMatch, leftPattern, rightPattern, fn] = inlinePattern;
+				objects.push(fn(consumeInlineUntil(rightPattern), leftMatch));
 				continue;
 			}
 			
@@ -124,16 +126,21 @@ notex.parse = function (string) {
 		
 		return objects;
 	}
-	function consumeVerbatimUntilRegex(until) {
-		let string = '';
-		while (!consumeRegex(until))
-			string += consumeN(1);
-		return string;
+	function consumeVerbatimUntil(until) {
+		// Little microoptimization for strings, even though the else clause would work.
+		if (typeof until === 'string') {			
+			const verbatim = consumeN(string.indexOf(until, position) - position);
+			if (!consume(until))
+				throw new Error('something is wrong with the above calculation');
+			return verbatim;
+		} else {
+			let string = '';
+			while (!consume(until))
+				string += consumeN(1);
+			return string;
+		}
 	}
 	function consumeVerbatimUntil(until) {
-		const verbatim = consumeN(string.indexOf(until, position) - position);
-		consume(until);
-		return verbatim;
 	}
 	
 	return consumeBlocks();

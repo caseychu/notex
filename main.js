@@ -4,12 +4,12 @@ const notex = require('./notex.js');
 const katex = require('katex');
 
 notex.inline = [
-	[/\*/, /\*/, children => `<b>${ children.join('') }</b>`]
+	['*', '*', children => `<b>${ children.join('') }</b>`]
 ];
 
 notex.inlineVerbatim = [
-	[/\$/, /\$/, katex.renderToString],
-	[/\\html\{/, /}/, html => html],
+	['$', '$', katex.renderToString],
+	['\\html{', '}', html => html],
 ];
 
 notex.commands = [
@@ -30,7 +30,7 @@ notex.commands = [
 			<div class="indent">${ children.join('') }</div>
 		</div>`],
 
-	[/()/, (head, children) => `
+	['', (head, children) => `
 		<div class="paragraph">
 			${ head.join('') }
 			<div class="indent">${ children.join('') }</div>
