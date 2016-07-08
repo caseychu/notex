@@ -1,7 +1,7 @@
 const fs = require('fs');
 const notex = require('./notex.js');
 
-var pretty = require('pretty');
+const katex = require('katex');
 
 
 const htmlentities = text => text; // shh
@@ -16,34 +16,39 @@ renderer.registerVerbatimTag('\\html{{', '}}', text => text);
 renderer.registerVerbatimTag('\\html{', '}', text => text);
 */
 
-notex.inline = {
-	//'\\*'
-};
+notex.inline = [
+	[/\*/, /\*/, children => `<b>${ children.join('') }</b>`]
+];
 
+notex.inlineVerbatim = [
+	[/\$/, /\$/, katex.renderToString],
+	[/\\html\{/, /}/, html => html],
+];
 
-notex.commands = {
-	'#{1,6}': (head, children, type) => `
-		<h${type.length}>${ head.join('') }</h${type.length}>
-		${ children.join('') }`,
+notex.commands = [
 
-	'-': (head, children) => `
-		<div class="bullet">
-			${ head.join('') }
-			<div class="indent">${ children.join('') }</div>
-		</div>`,
+	[/#{1,6}/, (head, children, match) => `
+		<h${match[0].length}>${ head.join('') }</h${match[0].length}>
+		${ children.join('') }`],
 		
-	'\\\\(thm|def|iff)': (head, children, type) => `
-		<p class="${ type.substr(1) }">
-			<b>${ type }:</b> ${ head.join('') }
+	[/\\(thm|def)/, (head, children, match) => `
+		<div class="paragraph">
+			<b>${ match[1] }:</b> ${ head.join('') }
 			<div class="indent">${ children.join('') }</div>
-		</p>`,
+		</div>`],
+		
+	[/-|\\(iff|if|then)/, (head, children, match) => `
+		<div class="bullet">
+			(${ match[0] }) ${ head.join('') }
+			<div class="indent">${ children.join('') }</div>
+		</div>`],
 
-	'': (head, children) => `
-		<p>
+	[/()/, (head, children) => `
+		<div class="paragraph">
 			${ head.join('') }
 			<div class="indent">${ children.join('') }</div>
-		</p>`
-};
+		</div>`],
+];
 
 //notex.createNode = (type, children) => React.createElement(type, {}, children);
 //notex.createNode = (type, { text, children }) => <type text={text}>{ children }</type>;
@@ -53,28 +58,16 @@ tags.set(['*', '*'], (children, render) => `\\textbf{${ render(children) }}`);
 
 tags.set('\\thm', (head, tail, render) => )*/
 
-function toHTML(nodes) {
-	if (!Array.isArray(nodes))
-		return nodes;
-	return nodes.map(node => {
-		if (node.length === 3)
-			return `
-				<${node[0]}>
-					<${node[0]}-head>${toHTML(node[1])}</${node[0]}-head>
-					<${node[0]}-body>${toHTML(node[2])}</${node[0]}-body>
-				</${node[0]}>`;
-		if (node.length !== 2)
-			throw new Error();
-		return `
-			<${node[0]}>${toHTML(node[1])}</${node[0]}>`;
-	}).join('');
-}
-
 const tree = notex.parse(fs.readFileSync(process.argv[2]).toString());
 console.log(`
+	<meta charset="utf-8" />
+	<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.6.0/katex.min.css" />
 	<style>
 		.indent {
 			margin-left: 2em;
+		}
+		.paragraph {
+			margin: 1em 0;
 		}
 	</style>
 `)

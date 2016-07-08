@@ -7,26 +7,24 @@
 \thm *Lagrange's theorem:* $|H|$ divides $|G|$.
 
 \def A set $H$ is a *normal subgroup* of $G$
-	\iff $H \normalsubgroupof G$
+	\iff $H \trianglelefteq G$
 	\iff left cosets coincide with right cosets: $H \le G$, $\forall g \in G: gH = Hg$
 	\iff $H$ is invariant under conjugation: $H \le G$, $\forall g \in G: \forall h \in H: ghg^{-1} \in H$
 	\iff $H \le G$, $H$ is a union of conjugacy classes
 		\footnote this is always the case
-	\iff the set of cosets of $H$ forms a group, called the *quotient group*, $G/H = \{ Hg \st g \in G \}$, under the group operation $(Ha)(Hb) = H(ab)$ with the identity $H$
+	\iff the set of cosets of $H$ forms a group, called the *quotient group*, $G/H = \{ Hg \,\|\, g \in G \}$, under the group operation $(Ha)(Hb) = H(ab)$ with the identity $H$
 	\if 
 	\then 
 
-\def $A \subseteq X$ and $B \subseteq X$ are *separated* \iff $\bar{A} \intersect B = A \intersect \bar{B} = \varnothing$.
+\def $A \subseteq X$ and $B \subseteq X$ are *separated* \iff $\bar{A} \cap B = A \cap \bar{B} = \varnothing$.
 
-# Gradient descent of $f$
-Suppose we want to minimize $f : \R^d \to \R$. The *gradient*.
+# Gradient descent
+Suppose we want to minimize $f : \mathbb{R}^d \to \mathbb{R}$. The gradient descent algorithm initializes a guess $\mathbf{x}$ and repeatedly moves along the negative gradient at $\mathbf{x}$, i.e. repeatedly sets $\mathbf{x}$ to be $\mathbf{x} - \alpha \nabla f(\mathbf{x})$ for some learning rate $\alpha$, until convergence. The learning rate can be continually adjusted, perhaps to guarantee that $f(\mathbf{x})$ is smaller than it was.
+
+# Newton's method
+Suppose we want to find a zero of $f : \mathbb{R} \to \mathbb{R}$. Newton's method initializes a guess $x$ and then repeatedly sets $x$ to be the zero of the linear approximation of $f$ at $x$, i.e. repeatedly sets $x$ to be $x - \frac{f(x)}{f'(x)}$, until convergence.
 	
-## Linear regression
-Suppose we want to model $f$. Define an affine estimator with parameters $\alpha$ and $\beta$ \[
-	f(x) = \alpha + \langle \beta, \vecb{x} \rangle
-\]
-\footnote There is a problem here
-where we the function as $f$.
+Suppose we want to minimize or maximize $f : \mathbb{R}^d \to \mathbb{R}$. Then we can apply Newton's method to $\nabla f$, where we repeatedly set $\mathbf{x}$ to be $\mathbf{x} - \left(Hf(\mathbf{x}) \right)^{-1} \nabla f(\mathbf{x})$, where $Hf$ is the Hessian matrix of second derivatives.
 
 We want to minimize the following:
 	- energy ($E$)
@@ -35,7 +33,7 @@ We want to minimize the following:
 	- Gibbs free energy ($G$)
 
 
-\thm $A \subseteq X$ and $B \subseteq X$ are *separated* \iff $\bar{A} \intersect B = A \intersect \bar{B} = \varnothing$.
+\thm $A \subseteq X$ and $B \subseteq X$ are *separated* \iff $\bar{A} \cap B = A \cap \bar{B} = \varnothing$.
 
 # Chapter 1: constitution
 The constitution says that there.

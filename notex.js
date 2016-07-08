@@ -1,18 +1,34 @@
-const EOL = '\n';
+const EOL = /\r\n|\r|\n/;
 
 const notex = {};
 
 notex.commands = {};
-notex.createNode = (type, children) => `&lt;${ type }&gt;${ children }&lt;/${ type }&gt;`;
 
 notex.parse = function (string) {
 	let position = 0;
 
+	function matchRegex(re) {
+		// Simulate a sticky regex
+		return (new RegExp('^(' + re.source + ')')).exec(string.substr(position));
+	}
+
+	function consumeRegex(re) {
+		const match = matchRegex(re);
+		if (match) {
+			position += match[0].length;
+			return match.slice(1);
+		}
+		return false;
+	}
+
 	function consume(substring) {
-		const matched = string.substr(position, substring.length) === substring;
-		if (matched)
-			position += substring.length;
-		return matched;
+		if (typeof substring === 'string') {
+			const matched = string.substr(position, substring.length) === substring;
+			if (matched)
+				position += substring.length;
+			return matched;
+		} else
+			throw new Error('invalid object to consume');
 	}
 	
 	function consumeN(n) {
@@ -21,27 +37,27 @@ notex.parse = function (string) {
 		return substring;
 	}
 	
+	function consumePatterns(patterns) {
+		for (let [regex, ...rest] of patterns) {
+			const match = consumeRegex(regex);
+			if (match)
+				return [match, regex, ...rest];
+		}
+		return false;
+	}
+	
 	function consumeBlocks(tabs=0) {
 		const objects = [];
 		while (position < string.length) {
 			if (consume('\t'.repeat(tabs))) {
-				let createNode = null;
-				let match = null;
-				for (let command in notex.commands) {
-					var re = new RegExp('^' + command);
-					if (match = re.exec(string.substr(position))) {
-						createNode = notex.commands[command];
-						break;
-					}
-				}
+				const pattern = consumePatterns(notex.commands);
+				if (!pattern)
+					throw new Error('Couldn\'t parse tag');
 				
-				if (!match)
-					throw new Error('No match at ' + position + ': "' + string.substr(position, 10) + '"');
-				position += match[0].length;
-				
+				const [match, regex, fn] = pattern;
 				const header = consumeInlineUntil(EOL);
 				const children = consumeBlocks(tabs + 1);
-				objects.push(createNode(header, children, match[0]));
+				objects.push(fn(header, children, match));
 			}
 			
 			// A new line.
@@ -57,7 +73,7 @@ notex.parse = function (string) {
 	
 	function consumeInlineUntil(until) {
 		const objects = [];
-		while (!consume(until)) {
+		while (!consumeRegex(until)) {
 			// Reached end of string.
 			if (position >= string.length) {
 				if (until === EOL)
@@ -66,25 +82,31 @@ notex.parse = function (string) {
 					throw new SyntaxError('Unexpected end of file: expected character ' + until);
 			}
 		
-			// Math.
-			if (consume('$'))
-				objects.push(notex.createNode('MATH', consumeVerbatimUntil('$')));
-			
-			// Bold.
-			else if (consume('*'))
-				objects.push(notex.createNode('BOLD', consumeInlineUntil('*')));
-			
-			// Other.
-			else {
-				if (typeof objects[objects.length - 1] === 'string')
-					objects[objects.length - 1] += consumeN(1);
-				else
-					objects.push(consumeN(1));
+			const verbatimPattern = consumePatterns(notex.inlineVerbatim);
+			if (verbatimPattern) {
+				const [leftMatch, leftRegex, rightRegex, fn] = verbatimPattern;
+				objects.push(fn(consumeVerbatimUntilRegex(rightRegex), leftMatch));
+				continue;
 			}
+			
+			const inlinePattern = consumePatterns(notex.inline);
+			if (inlinePattern) {
+				const [leftMatch, leftRegex, rightRegex, fn] = inlinePattern;
+				objects.push(fn(consumeInlineUntil(rightRegex), leftMatch));
+				continue;
+			}
+			
+			// Just text.
+			objects.push(consumeN(1));
 		}
-		return objects.length && objects;
+		return objects;
 	}
-	
+	function consumeVerbatimUntilRegex(until) {
+		let string = '';
+		while (!consumeRegex(until))
+			string += consumeN(1);
+		return string;
+	}
 	function consumeVerbatimUntil(until) {
 		const verbatim = consumeN(string.indexOf(until, position) - position);
 		consume(until);
