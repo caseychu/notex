@@ -1,7 +1,7 @@
 const EOL = /\r\n|\r|\n/;
 
 const notex = {};
-notex.commands = [[/()/, (head, children) => [head, children]]];
+notex.commands = [['', (head, children) => [head, children]]];
 notex.inline = [];
 notex.inlineVerbatim = [];
 
@@ -29,10 +29,11 @@ notex.parse = function (string) {
 		return matched;
 	}
 
+	// Returns truthy iff successfully consumed the pattern.
 	function consume(pattern) {
-		if (typeof arg === 'string')
+		if (typeof pattern === 'string')
 			return consumeLiteral(pattern)
-		else if (arg instanceof RegExp)
+		else if (pattern instanceof RegExp)
 			return consumeRegex(pattern);
 		else
 			throw new Error('invalid object to consume');
@@ -45,10 +46,10 @@ notex.parse = function (string) {
 	}
 	
 	function consumePatterns(patterns) {
-		for (let [regex, ...rest] of patterns) {
-			const match = consumeRegex(regex);
+		for (let [pattern, ...rest] of patterns) {
+			const match = consume(pattern);
 			if (match)
-				return [match, regex, ...rest];
+				return [match, pattern, ...rest];
 		}
 		return false;
 	}
@@ -139,8 +140,6 @@ notex.parse = function (string) {
 				string += consumeN(1);
 			return string;
 		}
-	}
-	function consumeVerbatimUntil(until) {
 	}
 	
 	return consumeBlocks();
