@@ -8,7 +8,7 @@ notex.inline = [
 ];
 
 notex.inlineVerbatim = [
-	['$', '$', _ => _], //katex.renderToString],
+	['$', '$', katex.renderToString],
 	['\\html{', '}', html => html],
 ];
 
