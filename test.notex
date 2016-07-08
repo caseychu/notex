@@ -19,33 +19,45 @@
 \def $A \subseteq X$ and $B \subseteq X$ are *separated* \iff $\bar{A} \intersect B = A \intersect \bar{B} = \varnothing$.
 
 # Gradient descent of $f$
-	Suppose we want to minimize $f : \R^d \to \R$. The *gradient*.
+Suppose we want to minimize $f : \R^d \to \R$. The *gradient*.
 	
-	## Linear regression
-		Suppose we want to model $f$. Define an affine estimator with parameters $\alpha$ and $\beta$ \[
-				f(x) = \alpha + \langle \beta, \vecb{x} \rangle
-			\]
-			\footnote There is a problem here
-			where we the function as $f$.
-		
-		We want to minimize
+## Linear regression
+Suppose we want to model $f$. Define an affine estimator with parameters $\alpha$ and $\beta$ \[
+	f(x) = \alpha + \langle \beta, \vecb{x} \rangle
+\]
+\footnote There is a problem here
+where we the function as $f$.
+
+We want to minimize the following:
+	- energy ($E$)
+	- enthalpy ($H$)
+		Note that the enthalpy is minimized when the energy is minimized!
+	- Gibbs free energy ($G$)
+
 
 \thm $A \subseteq X$ and $B \subseteq X$ are *separated* \iff $\bar{A} \intersect B = A \intersect \bar{B} = \varnothing$.
 
-\list Personal pronouns
-	*ég*: I
-	*þú*: you
-	*hann/hún/það*: he/she/it
+# Chapter 1: constitution
+The constitution says that there.
+
+Now tere
+
+# Personal pronouns
+First are personal pronouns:
+	ég: I
+	þú: you
+	hann/hún/það: he/she/it
 	við: we
 	þið: you pl.
 	þeir/þær/þau: they
+		\note this is tricky
 
 
-	að vera (er/ert/er/erum/eruð/eru): to be
-	: to have
-	að gera: to do
-	að fara: to go
-	að segja: to say
-	að tala: to speak/talk
-	að finna: to find
-	að vinna: to work
+# Verbs
+	- að vera (er/ert/er/erum/eruð/eru): to be
+	- að gera: to do
+	- að fara: to go
+	- að segja: to say
+	- að tala: to speak/talk
+	- að finna: to find
+	- að vinna: to work

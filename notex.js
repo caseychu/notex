@@ -1,6 +1,11 @@
 const EOL = '\n';
 
-function notex(string) {
+const notex = {};
+
+notex.commands = {};
+notex.createNode = (type, children) => `&lt;${ type }&gt;${ children }&lt;/${ type }&gt;`;
+
+notex.parse = function (string) {
 	let position = 0;
 
 	function consume(substring) {
@@ -20,13 +25,23 @@ function notex(string) {
 		const objects = [];
 		while (position < string.length) {
 			if (consume('\t'.repeat(tabs))) {
+				let createNode = null;
+				let match = null;
+				for (let command in notex.commands) {
+					var re = new RegExp('^' + command);
+					if (match = re.exec(string.substr(position))) {
+						createNode = notex.commands[command];
+						break;
+					}
+				}
+				
+				if (!match)
+					throw new Error('No match at ' + position + ': "' + string.substr(position, 10) + '"');
+				position += match[0].length;
+				
 				const header = consumeInlineUntil(EOL);
 				const children = consumeBlocks(tabs + 1);
-				
-				if (header.length === 1) // Todo: check that this is a TAG instead
-					objects.push([header[0][0], header[0][1], children]);
-				else
-					objects.push(['PARAGRAPH', header, children]);
+				objects.push(createNode(header, children, match[0]));
 			}
 			
 			// A new line.
@@ -53,39 +68,18 @@ function notex(string) {
 		
 			// Math.
 			if (consume('$'))
-				objects.push(['MATH', consumeVerbatimUntil('$')]);
-			
-			else if (consume('\\['))
-				objects.push(['MATH_DISPLAY', consumeVerbatimUntil('\\]')]);
+				objects.push(notex.createNode('MATH', consumeVerbatimUntil('$')));
 			
 			// Bold.
 			else if (consume('*'))
-				objects.push(['BOLD', consumeInlineUntil('*')]);
-			
-			// Tags.
-			else if (consume('\\def ')) {
-				objects.push(['DEF', consumeInlineUntil(until)]);
-				break;
-			}
-			else if (consume('\\thm ')) {
-				objects.push(['THM', consumeInlineUntil(until)]);
-				break;
-			}
-			else if (consume('\\pred ')) {
-				objects.push(['PRED', consumeInlineUntil(until)]);
-				break;
-			}
-			else if (consume('\\iff ')) {
-				objects.push(['IFF', consumeInlineUntil(until)]);
-				break;
-			}
+				objects.push(notex.createNode('BOLD', consumeInlineUntil('*')));
 			
 			// Other.
 			else {
-				if (objects[objects.length - 1] && objects[objects.length - 1][0] === 'TEXT')
-					objects[objects.length - 1][1] += consumeN(1);
+				if (typeof objects[objects.length - 1] === 'string')
+					objects[objects.length - 1] += consumeN(1);
 				else
-					objects.push(['TEXT', consumeN(1)]);
+					objects.push(consumeN(1));
 			}
 		}
 		return objects.length && objects;
