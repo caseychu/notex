@@ -3,42 +3,75 @@ const notex = require('./notex.js');
 
 const katex = require('katex');
 
+const tokens = notex.tokens;
 notex.commands = [
-	
-	[/#{1,6} /, ({ head, children, match }) => `
-		<h${match[0].length}>${ head.join('') }</h${match[0].length}>
-		${ children.join('') }`],
-		
-	[/\\(thm|def) /, ({ head, children, match }) => `
-		<div class="paragraph">
-			<b>${ match[1] }:</b> ${ head.join('') }
-			<div class="indent">${ children.join('') }</div>
-		</div>`],
-		
-	[/(-|\\(iff|if|then)) /, ({ head, children, match }) => `
-		<div class="bullet">
-			(${ match[1] }) ${ head.join('') }
-			<div class="indent">${ children.join('') }</div>
-		</div>`],
+	{
+		tag: true,
+		pattern: /#{1,6}/,
+		render: ([type], contents, children) => `
+			<h${ type.length }>${ contents.join('') }</h${ type.length }>
+			${ children.join('') }`
+	},
 
-	['', ({ head, children }) => `
-		<div class="paragraph">
-			${ head.join('') }
-			<div class="indent">${ children.join('') }</div>
-		</div>`],
-];
+	{
+		tag: true,
+		pattern: /\\(thm|def)/,
+		render: ([_, type], contents, children) => `
+			<div class="paragraph">
+				<b>${ type }:</b> ${ contents.join('') }
+				<div class="indent">${ children.join('') }</div>
+			</div>`
+	},
+		
+	{
+		tag: true,
+		pattern: /(?:(-)|\\(iff|if|then))/,
+		render: ([type], contents, children) => `
+			<div class="bullet">
+				(${ type }) ${ contents.join('') }
+				<div class="indent">${ children.join('') }</div>
+			</div>`
+	},
 
-notex.inline = [
-	[/\$([^\$]*)\$/, ({ match }) => `
-		<span class="math">
-			${ katex.renderToString(match[1], { throwOnError: false }) }
-		</span>`
-	],
-	[/\\\[([\s\S]*?)\\\]/, ({ match }) => katex.renderToString(match[1], { displayMode: true, throwOnError: false })],
-	[/\\html\{([^}]*)\}/, ({ match }) => match[1]],
+	{
+		tag: true,
+		render: (_, contents, children) => `
+			<div class="paragraph">
+				${ contents.join('') }
+				<div class="indent">${ children.join('') }</div>
+			</div>`
+	},
+/*
+	{
+		pattern: ['$', tokens.VERBATIM, '$'], 
+		render: (_, [math]) => `
+			<span class="math">
+				${ katex.renderToString(math, { throwOnError: false }) }
+			</span>`
+	},
 	
-	['**', '**', ({ children }) => `<strong>${ children.join('') }</strong>`],
-	['*', '*', ({ children }) => `<em>${ children.join('') }</em>`],
+	{
+		pattern: ['\\[', tokens.VERBATIM, '\\]'],
+		render: (_, [math]) => `
+			<div class="math">
+				${ katex.renderToString(math, { throwOnError: false, displayMode: true }) }
+			</div>`
+	},
+	
+	{
+		pattern: ['**', tokens.TEXT, '**'],
+		render: (_, contents)  => `<strong>${ contents.join('') }</strong>`
+	},
+	
+	{
+		patterns: ['*', tokens.TEXT, '*'],
+		render: (_, contents) => `<em>${ contents.join('') }</em>`
+	},
+	
+	{
+		patterns: ['[', tokens.TEXT, '](', tokens.VERBATIM, ')'],
+		render: (_, contents, __, url) => `<a href="${url}">${ contents.join('') }</a>`
+	}*/
 ];
 
 const tree = notex.parse(fs.readFileSync(process.argv[2]).toString());
