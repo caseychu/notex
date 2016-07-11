@@ -29,7 +29,11 @@ notex.commands = [
 ];
 
 notex.inline = [
-	[/\$([^\$]*)\$/, ({ match }) => katex.renderToString(match[1], { throwOnError: false })],
+	[/\$([^\$]*)\$/, ({ match }) => `
+		<span class="math">
+			${ katex.renderToString(match[1], { throwOnError: false }) }
+		</span>`
+	],
 	[/\\\[([\s\S]*?)\\\]/, ({ match }) => katex.renderToString(match[1], { displayMode: true, throwOnError: false })],
 	[/\\html\{([^}]*)\}/, ({ match }) => match[1]],
 	
@@ -41,13 +45,6 @@ const tree = notex.parse(fs.readFileSync(process.argv[2]).toString());
 console.log(`
 	<meta charset="utf-8" />
 	<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.6.0/katex.min.css" />
-	<style>
-		.indent {
-			margin-left: 2em;
-		}
-		.paragraph {
-			margin: 1em 0;
-		}
-	</style>
+	<link rel="stylesheet" type="text/css" href="style.css" />
 `)
 console.log(tree.join(''));

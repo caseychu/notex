@@ -1,0 +1,21 @@
+body {
+	width: 8in;
+	padding: 1in;
+	margin: 1em auto;
+	
+	font-family: georgia;
+	font-size: 16pt;
+	line-height: 1.5em;
+}
+
+.indent {
+	margin-left: 2em;
+}
+.paragraph {
+	margin: 1em 0;
+}
+
+.math {
+	font-size: 0.9em;
+	padding: 0 2px;
+}
