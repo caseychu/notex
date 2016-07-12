@@ -7,7 +7,7 @@ const tokens = notex.tokens;
 notex.commands = [
 	{
 		tag: true,
-		pattern: /#{1,6}/,
+		pattern: /#{1,6}\s*/,
 		render: ([type], contents, children) => `
 			<h${ type.length }>${ contents.join('') }</h${ type.length }>
 			${ children.join('') }`
@@ -15,7 +15,7 @@ notex.commands = [
 
 	{
 		tag: true,
-		pattern: /\\(thm|def)/,
+		pattern: /\\(thm|def)\s+/,
 		render: ([_, type], contents, children) => `
 			<div class="paragraph">
 				<b>${ type }:</b> ${ contents.join('') }
@@ -25,7 +25,7 @@ notex.commands = [
 		
 	{
 		tag: true,
-		pattern: /(?:(-)|\\(iff|if|then))/,
+		pattern: /(?:(-)|\\(iff|if|then))\s+/,
 		render: ([type], contents, children) => `
 			<div class="bullet">
 				(${ type }) ${ contents.join('') }
@@ -44,12 +44,14 @@ notex.commands = [
 
 	{
 		pattern: ['$', tokens.VERBATIM, '$'], 
-		render: (_, math) => `
+		render: (_, math) => `<tt>${ math }</tt>`
+		/*render: (_, math) => `
 			<span class="math">
 				${ katex.renderToString(math, { throwOnError: false }) }
 			</span>`
+		*/
 	},
-/*
+
 	{
 		pattern: ['\\[', tokens.VERBATIM, '\\]'],
 		render: (_, math) => `
@@ -64,18 +66,14 @@ notex.commands = [
 	},
 	
 	{
-		patterns: ['*', tokens.TEXT, '*'],
-		render: (_, contents) => {
-			console.warn(_);
-			console.warn(contents);
-			return `<em>${ contents }</em>`;
-		}
+		pattern: ['*', tokens.TEXT, '*'],
+		render: (_, contents) => `<em>${ contents.join('') }</em>`
 	},
 	
 	{
-		patterns: ['[', tokens.TEXT, '](', tokens.VERBATIM, ')'],
+		pattern: ['[', tokens.TEXT, '](', tokens.VERBATIM, ')'],
 		render: (_, contents, __, url) => `<a href="${url}">${ contents.join('') }</a>`
-	}*/
+	}
 ];
 
 const tree = notex.parse(fs.readFileSync(process.argv[2]).toString());
@@ -84,4 +82,9 @@ console.log(`
 	<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.6.0/katex.min.css" />
 	<link rel="stylesheet" type="text/css" href="style.css" />
 `)
-console.log(typeof tree === 'string' ? tree : tree.join(''));
+if (typeof tree === 'string')
+	console.log(tree)
+else if (Array.isArray(tree))
+	console.log(tree.join(''))
+else
+	console.log(JSON.stringify(tree, null, 2));

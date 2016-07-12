@@ -1,7 +1,7 @@
 const notex = {};
 
 const tokens = notex.tokens = {
-	EOL: /\r\n|\r|\n|$/,
+	EOL: /\r\n|\r|\n/,
 	TEXT: Symbol('TEXT'),
 	VERBATIM: Symbol('VERBATIM')
 };
@@ -23,7 +23,7 @@ notex.parse = function (string) {
 			command.pattern = [command.pattern || ''];
 		(command.tag ? tagCommands : inlineCommands).push(command);
 	}
-	const rawTextEscape = text => `[${ text }]`;
+	const rawTextEscape = text => text;
 	
 	function cloneableGenerator(generatorFunction, ...args) {
 		const generator = generatorFunction(...args);
@@ -81,19 +81,23 @@ notex.parse = function (string) {
 	}
 
 	function* match(position, pattern) {
-		console.warn(`Matching at position ${position}, pattern ${patternToString(pattern)}`)
+		//console.warn(`Matching at position ${position}, pattern ${patternToString(pattern)}`)
 		
 		// This is a list of possibilities.
 		if (Array.isArray(pattern)) {
 			if (pattern.length) {
 				for (let subpattern of pattern)
-					yield* match(position, subpattern)
+					yield* match(position, subpattern); 
 			}
 		}
 		
 		// A generator.
-		else if (typeof pattern === 'function')
+		else if (typeof pattern === 'function') {
 			yield* matchGen(position, cloneableGenerator(pattern));
+			
+			// Will adding a return here trigger tail-call optimization?
+			// Apparently not -- http://stackoverflow.com/questions/30135916/does-es6-tail-call-optimization-cover-generators
+		}
 		
 		else if ([tokens.VERBATIM].includes(pattern)) {
 			let i = 0;
@@ -114,7 +118,6 @@ notex.parse = function (string) {
 			const result = re.exec(substr);
 			
 			if (result)
-				// Make sure to toss out the extra group captured by our fake regex
 				yield [position + result[0].length, result.length > 1 ? result : result[0]]
 		}
 		
@@ -122,22 +125,26 @@ notex.parse = function (string) {
 			throw new Error('Invalid pattern: ' + pattern);
 	}
 	
-	// block_n -> line_n block_n | e
 	function createGenBlock(tabs=0) {
+		// block_n -> line_n block_n | e
 		return function* genBlock() {
 			return yield [
 				function* genBlock1() {
-					return [yield createGenLine(tabs), ...yield createGenBlock(tabs)];
+					return [
+						yield createGenLine(tabs),
+						...yield createGenBlock(tabs)
+					];
 				},
 				function* genBlock2() {
+					yield '';
 					return [];
 				}
 			];
 		};
 	}
 	
-	// line_n -> TAB^n tagCommand text EOL block_{n+1} | TAB* EOL
 	function createGenLine(tabs=0) {
+		// line_n -> TAB^n tagCommand text EOL block_{n+1} | TAB* EOL
 		return function* genLine() {
 			return yield [
 				function* genLine1() {
@@ -147,7 +154,6 @@ notex.parse = function (string) {
 						for (let pattern of command.pattern)
 							captures.push(yield pattern);
 						
-						yield (/\s+/);
 						const contents = yield genText;
 						yield tokens.EOL;
 						const children = yield createGenBlock(tabs + 1);
@@ -203,7 +209,15 @@ notex.parse = function (string) {
 		];
 	}
 	
-	for (let [position, block] of match(0, createGenBlock(0)))
+	// START -> block_0 EOF
+	function* genStart() {
+		const parsed = yield createGenBlock(0);
+		yield /$/;
+		return parsed;
+	}
+	
+	string += '\n';
+	for (let [position, block] of match(0, genStart))
 		return block;
 };
 
