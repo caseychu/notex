@@ -79,7 +79,7 @@ notex.commands = [
 	}
 ];
 
-const tree = notex.parse(fs.readFileSync(process.argv[2]).toString());
+const tree = notex.parse(fs.readFileSync(process.argv[2]).toString('utf8'));
 console.log(`
 	<meta charset="utf-8" />
 	<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.6.0/katex.min.css" />

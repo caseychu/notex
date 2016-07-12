@@ -81,7 +81,7 @@ notex.parse = function (string) {
 	}
 
 	function* match(position, pattern) {
-		console.warn(`Matching at position ${position}, pattern ${patternToString(pattern)}`)
+		//console.warn(`Matching at position ${position}, pattern ${patternToString(pattern)}`)
 		
 		// This is a list of possibilities.
 		if (Array.isArray(pattern)) {
