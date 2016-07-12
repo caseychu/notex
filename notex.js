@@ -1,7 +1,7 @@
 const notex = {};
 
 const tokens = notex.tokens = {
-	EOL: /\r\n|\r|\n/,
+	EOL: /[\r\n]+/,
 	TEXT: Symbol('TEXT'),
 	VERBATIM: Symbol('VERBATIM')
 };
@@ -53,16 +53,16 @@ notex.parse = function (string) {
 		}
 	
 		let clone;
-		let matched = false;
 		for (let [nextPosition, nextCaptures] of match(position, result.value)) {
 			
 			// Reset the iterator if necessary.
 			if (!clone)
 				clone = iter.cloner();
-			else
+			else {
 				iter = clone();
+				// Backtracked
+			}
 			
-			matched = true;
 			yield* matchGen(nextPosition, iter, nextCaptures);
 		}
 	}
@@ -81,7 +81,7 @@ notex.parse = function (string) {
 	}
 
 	function* match(position, pattern) {
-		//console.warn(`Matching at position ${position}, pattern ${patternToString(pattern)}`)
+		console.warn(`Matching at position ${position}, pattern ${patternToString(pattern)}`)
 		
 		// This is a list of possibilities.
 		if (Array.isArray(pattern)) {
@@ -97,13 +97,6 @@ notex.parse = function (string) {
 			
 			// Will adding a return here trigger tail-call optimization?
 			// Apparently not -- http://stackoverflow.com/questions/30135916/does-es6-tail-call-optimization-cover-generators
-		}
-		
-		else if ([tokens.VERBATIM].includes(pattern)) {
-			let i = 0;
-			do {
-				yield [position + i, string.substr(position, i)];
-			} while ((position + i) <= string.length && !['\r', '\n', '\r\n'].includes(string[position + (i++)]));
 		}
 		
 		else if (typeof pattern === 'string') {
@@ -130,10 +123,9 @@ notex.parse = function (string) {
 		return function* genBlock() {
 			return yield [
 				function* genBlock1() {
-					return [
-						yield createGenLine(tabs),
-						...yield createGenBlock(tabs)
-					];
+					const line = yield createGenLine(tabs);
+					const block = yield createGenBlock(tabs);
+					return [line, ...block];
 				},
 				function* genBlock2() {
 					yield '';
@@ -149,16 +141,18 @@ notex.parse = function (string) {
 			return yield [
 				function* genLine1() {
 					yield '\t'.repeat(tabs);
-					return yield tagCommands.map(command => function* genTagCommand() {
-						const captures = [];
-						for (let pattern of command.pattern)
-							captures.push(yield pattern);
-						
-						const contents = yield genText;
-						yield tokens.EOL;
-						const children = yield createGenBlock(tabs + 1);
-						return command.render(...captures, contents, children);
-					});
+					let [command, captures] = yield tagCommands.map(
+						command => function* genTagCommand() {
+							const captures = [];
+							for (let pattern of command.pattern)
+								captures.push(yield pattern);
+							return [command, captures];
+						});
+					
+					const contents = yield genText;
+					yield tokens.EOL;
+					const children = yield createGenBlock(tabs + 1);
+					return command.render(...captures, contents, children);
 				},
 				
 				function* genLine2() {
@@ -174,20 +168,21 @@ notex.parse = function (string) {
 	function* genText() {
 		return yield [
 			function* genText1() {
-				return [
-					rawTextEscape(yield genRawText),
-					yield inlineCommands.map(command => function* genInlineCommand() {
-						const captures = []
-						for (let pattern of command.pattern) {
-							if (pattern === tokens.TEXT)
-								captures.push(yield genText);
-							else
-								captures.push(yield pattern);
-						}
-						return command.render(...captures);
-					}),
-					...yield genText
-				];
+				const rawText = rawTextEscape(yield genRawText);
+				const inlineCommand = yield inlineCommands.map(command => function* genInlineCommand() {
+					const captures = []
+					for (let pattern of command.pattern) {
+						if (pattern === tokens.TEXT)
+							captures.push(yield genText);
+						else if (pattern === tokens.VERBATIM)
+							captures.push(yield genVerbatim);
+						else
+							captures.push(yield pattern);
+					}
+					return command.render(...captures);
+				});
+				const text = yield genText;
+				return [rawText, inlineCommand, ...text];
 			},
 			
 			function* genText2() {
@@ -196,18 +191,26 @@ notex.parse = function (string) {
 		];
 	}
 	
-	// rawText -> e | [^\r\n] rawText
+	// rawText -> e | /[^\r\n]/ rawText
 	function* genRawText() {
 		return yield [
 			'',
 			function* genRawText1() {
-				return [
-					yield /[^\r\n]/,
-					...yield genRawText
-				].join('');
+				return (yield /[^\r\n]/) + (yield genRawText);
 			}
 		];
 	}
+	
+	// verbatim -> e | /./ verbatim
+	function* genVerbatim() {
+		return yield [
+			'',
+			function* genVerbatim1() {
+				return (yield /[\w\W]/) + (yield genRawText);
+			}
+		];
+	}
+	// only first match
 	
 	// START -> block_0 EOF
 	function* genStart() {
@@ -217,8 +220,11 @@ notex.parse = function (string) {
 	}
 	
 	string += '\n';
-	for (let [position, block] of match(0, genStart))
-		return block;
+	for (let [position, block] of match(0, genStart)) {
+		//return block;
+		console.log(block.join(''));
+		console.log('<hr />')
+	}
 };
 
 module.exports = notex;

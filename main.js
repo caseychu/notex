@@ -44,20 +44,23 @@ notex.commands = [
 
 	{
 		pattern: ['$', tokens.VERBATIM, '$'], 
-		//render: (_, math) => `<tt>${ math }</tt>`
-		render: (_, math) => `
+		render: (_, math) => `<tt style="color: red">${ math }</tt>`
+		/*render: (_, math) => `
 			<span class="math">
 				${ katex.renderToString(math, { throwOnError: false }) }
 			</span>`
-		
+		*/
 	},
 
 	{
 		pattern: ['\\[', tokens.VERBATIM, '\\]'],
+		render: (_, math) => `<div><tt style="color: red">${ math }</tt></div>`
+		/*
 		render: (_, math) => `
 			<div class="math">
 				${ katex.renderToString(math, { throwOnError: false, displayMode: true }) }
 			</div>`
+		*/
 	},
 	
 	{
