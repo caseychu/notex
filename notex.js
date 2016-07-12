@@ -210,7 +210,6 @@ notex.parse = function (string) {
 			}
 		];
 	}
-	// only first match
 	
 	// START -> block_0 EOF
 	function* genStart() {
@@ -221,7 +220,8 @@ notex.parse = function (string) {
 	
 	string += '\n';
 	for (let [position, block] of match(0, genStart)) {
-		//return block;
+		return block;
+		
 		console.log(block.join(''));
 		console.log('<hr />')
 	}
