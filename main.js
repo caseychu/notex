@@ -41,18 +41,18 @@ notex.commands = [
 				<div class="indent">${ children.join('') }</div>
 			</div>`
 	},
-/*
+
 	{
 		pattern: ['$', tokens.VERBATIM, '$'], 
-		render: (_, [math]) => `
+		render: (_, math) => `
 			<span class="math">
 				${ katex.renderToString(math, { throwOnError: false }) }
 			</span>`
 	},
-	
+/*
 	{
 		pattern: ['\\[', tokens.VERBATIM, '\\]'],
-		render: (_, [math]) => `
+		render: (_, math) => `
 			<div class="math">
 				${ katex.renderToString(math, { throwOnError: false, displayMode: true }) }
 			</div>`
@@ -65,7 +65,11 @@ notex.commands = [
 	
 	{
 		patterns: ['*', tokens.TEXT, '*'],
-		render: (_, contents) => `<em>${ contents.join('') }</em>`
+		render: (_, contents) => {
+			console.warn(_);
+			console.warn(contents);
+			return `<em>${ contents }</em>`;
+		}
 	},
 	
 	{
@@ -80,4 +84,4 @@ console.log(`
 	<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.6.0/katex.min.css" />
 	<link rel="stylesheet" type="text/css" href="style.css" />
 `)
-console.log(tree.join(''));
+console.log(typeof tree === 'string' ? tree : tree.join(''));

@@ -3,8 +3,7 @@ const notex = {};
 const tokens = notex.tokens = {
 	EOL: /\r\n|\r|\n|$/,
 	TEXT: Symbol('TEXT'),
-	VERBATIM: /(.*?)/,
-	RAW_TEXT: /[^\r\n]/ //Symbol('RAW_TEXT')
+	VERBATIM: Symbol('VERBATIM')
 };
 
 // A default set of commands.
@@ -24,6 +23,7 @@ notex.parse = function (string) {
 			command.pattern = [command.pattern || ''];
 		(command.tag ? tagCommands : inlineCommands).push(command);
 	}
+	const rawTextEscape = text => `[${ text }]`;
 	
 	function cloneableGenerator(generatorFunction, ...args) {
 		const generator = generatorFunction(...args);
@@ -36,7 +36,7 @@ notex.parse = function (string) {
 		generator.cloner = function () {
 			const length = calledValues.length;
 			return function () {
-				const generator = cloneableGenerator(...arguments);
+				const generator = cloneableGenerator(generatorFunction, ...args);
 				for (let i = 0; i < length; i++)
 					generator.next(calledValues[i]);
 				return generator;
@@ -53,6 +53,7 @@ notex.parse = function (string) {
 		}
 	
 		let clone;
+		let matched = false;
 		for (let [nextPosition, nextCaptures] of match(position, result.value)) {
 			
 			// Reset the iterator if necessary.
@@ -60,51 +61,61 @@ notex.parse = function (string) {
 				clone = iter.cloner();
 			else
 				iter = clone();
-				
+			
+			matched = true;
 			yield* matchGen(nextPosition, iter, nextCaptures);
 		}
 	}
+	
+	function patternToString(pattern) {
+		// This is a list of possibilities.
+		if (Array.isArray(pattern))
+			return '[ ' + pattern.map(patternToString).join(', ') + ' ]';
+		
+		// A generator.
+		else if (typeof pattern === 'function')
+			return pattern.name;
+			
+		else
+			return pattern.toString();
+	}
 
 	function* match(position, pattern) {
+		console.warn(`Matching at position ${position}, pattern ${patternToString(pattern)}`)
 		
 		// This is a list of possibilities.
 		if (Array.isArray(pattern)) {
 			if (pattern.length) {
 				for (let subpattern of pattern)
 					yield* match(position, subpattern)
-			} else
-				yield [position, []];
+			}
 		}
 		
 		// A generator.
 		else if (typeof pattern === 'function')
 			yield* matchGen(position, cloneableGenerator(pattern));
-		/*
-		else if ([tokens.RAW_TEXT, tokens.VERBATIM].includes(pattern)) {
-			debugger
-			if (!tokens.EOL.test(string[position]))
-				yield [position + 1, string[position]];
-		/*
+		
+		else if ([tokens.VERBATIM].includes(pattern)) {
 			let i = 0;
 			do {
 				yield [position + i, string.substr(position, i)];
-			} while (tokens.EOL.test(string[position + (i++)]));*/
-		//}
+			} while ((position + i) <= string.length && !['\r', '\n', '\r\n'].includes(string[position + (i++)]));
+		}
 		
 		else if (typeof pattern === 'string') {
 			if (pattern === string.substr(position, pattern.length))
-				yield [position + pattern.length, [pattern]];
+				yield [position + pattern.length, pattern];
 		}
 		
 		else if (pattern instanceof RegExp) {
 			// Simulate a sticky regex starting from the given position
-			const re = new RegExp('^(' + pattern.source + ')');
+			const re = new RegExp('^(?:' + pattern.source + ')');
 			const substr = string.substr(position);
 			const result = re.exec(substr);
 			
 			if (result)
 				// Make sure to toss out the extra group captured by our fake regex
-				yield [position + result[0].length, result.slice(1)]
+				yield [position + result[0].length, result.length > 1 ? result : result[0]]
 		}
 		
 		else
@@ -115,10 +126,10 @@ notex.parse = function (string) {
 	function createGenBlock(tabs=0) {
 		return function* genBlock() {
 			return yield [
-				function* () {
+				function* genBlock1() {
 					return [yield createGenLine(tabs), ...yield createGenBlock(tabs)];
 				},
-				function* () {
+				function* genBlock2() {
 					return [];
 				}
 			];
@@ -129,9 +140,9 @@ notex.parse = function (string) {
 	function createGenLine(tabs=0) {
 		return function* genLine() {
 			return yield [
-				function* () {
+				function* genLine1() {
 					yield '\t'.repeat(tabs);
-					return yield tagCommands.map(command => function* () {
+					return yield tagCommands.map(command => function* genTagCommand() {
 						const captures = [];
 						for (let pattern of command.pattern)
 							captures.push(yield pattern);
@@ -144,7 +155,7 @@ notex.parse = function (string) {
 					});
 				},
 				
-				function* () {
+				function* genLine2() {
 					yield (/\t*/);
 					yield tokens.EOL;
 					return [];
@@ -153,15 +164,15 @@ notex.parse = function (string) {
 		};
 	}
 	
-	// text -> rawText inlineCommand text | rawText | e
+	// text -> rawText inlineCommand text | rawText
 	function* genText() {
-		return yield [		
-			function* () {
+		return yield [
+			function* genText1() {
 				return [
-					...yield tokens.RAW_TEXT,
-					...yield inlineCommands.map(command => function* () {
+					rawTextEscape(yield genRawText),
+					yield inlineCommands.map(command => function* genInlineCommand() {
 						const captures = []
-						for (pattern of command.pattern) {
+						for (let pattern of command.pattern) {
 							if (pattern === tokens.TEXT)
 								captures.push(yield genText);
 							else
@@ -173,17 +184,25 @@ notex.parse = function (string) {
 				];
 			},
 			
-			function* () {
-				return [...yield tokens.RAW_TEXT];
-			},
-			
-			function* () {
-				return [];
+			function* genText2() {
+				return [rawTextEscape(yield genRawText)];
 			}
 		];
 	}
 	
-	//for (let [position, block] of match(0, createGenBlock(0)))
+	// rawText -> e | [^\r\n] rawText
+	function* genRawText() {
+		return yield [
+			'',
+			function* genRawText1() {
+				return [
+					yield /[^\r\n]/,
+					...yield genRawText
+				].join('');
+			}
+		];
+	}
+	
 	for (let [position, block] of match(0, createGenBlock(0)))
 		return block;
 };
