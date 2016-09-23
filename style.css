@@ -1,21 +1,30 @@
 body {
-	width: 8in;
+	width: 9in;
 	padding: 1in;
 	margin: 1em auto;
 	
-	font-family: georgia;
+	font-family: serif;
 	font-size: 16pt;
 	line-height: 1.5em;
 }
 
-.indent {
-	margin-left: 2em;
+ul {
+	list-style: none;
 }
-.paragraph {
-	margin: 1em 0;
+
+.tag {
+	color: #C80000;
+	font-family: consolas;
+	font-size: 0.8em;
+	padding-right: 3px;
 }
 
 .math {
-	font-size: 0.9em;
+	font-size: 0.8em;
 	padding: 0 2px;
+	color: blue;
+}
+
+div.math {
+	text-align: center;
 }
