@@ -19,10 +19,10 @@
 }
 
 start = title:title? style:style? lines:line* {
-	return `
+	return `<!doctype html>
 		<title>${ title || 'Untitled' }</title>
-		<meta charset="utf-8" />
 		<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.6.0/katex.min.css" />
+
 		<style>
 			body {
 				font-family: serif;
@@ -49,14 +49,11 @@ start = title:title? style:style? lines:line* {
 			}
 
 			.math {
-				font-size: 0.8em;
 				padding: 0 2px;
 				color: blue;
 			}
-
-			div.math {
-				text-align: center;
-				padding: 0.5em;
+			.katex {
+				font-size: 1em !important;
 			}
 		</style>
 		

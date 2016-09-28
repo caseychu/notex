@@ -8,7 +8,6 @@ const notex = require('./notex.js');
 
 const file = process.argv[2];
 const server = http.createServer(function (req, res) {
-	res.writeHead(200, { 'Content-type': 'text/html' });
 	
 	// Retry because readFile can fail if the file is being saved to
 	const op = retry.operation();
@@ -16,7 +15,8 @@ const server = http.createServer(function (req, res) {
 		fs.readFile(file, function (err, contents) {
 			if (op.retry(err))
 				return;
-
+				
+			res.writeHead(200, { 'Content-type': 'text/html' });
 			res.end(notex.parse(contents.toString('utf8')));
 		});
 	}, { minTimeout: 50 });
@@ -31,7 +31,7 @@ fs.watch(file, function () {
 });
 
 server.listen(0, function () {
-	open('http://localhost:' + this.address().port);
+	open('http://localhost:' + server.address().port);
 });
 
 // Time out.
