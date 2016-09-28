@@ -9,6 +9,7 @@ const file = process.argv[2];
 const server = http.createServer(function (req, res) {
 	res.writeHead(200, { 'Content-type': 'text/html' });
 	res.end(notex.parse(fs.readFileSync(file).toString('utf8')));
+	// Bug: readFileSync can fail if file is locked
 });
 
 const wss = new ws.Server({ server });

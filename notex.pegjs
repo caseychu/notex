@@ -18,21 +18,25 @@
 	}
 }
 
-start = lines:line* {
+start = title:title? style:style? lines:line* {
 	return `
+		<title>{ title || 'Untitled' }</title>
 		<meta charset="utf-8" />
 		<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.6.0/katex.min.css" />
 		<style>
 			body {
-				width: 9in;
-				padding: 1in;
-				margin: 1em auto;
-				
 				font-family: serif;
 				font-size: 16pt;
 				line-height: 1.5em;
+				
+				max-width: 8in;
+				margin: 0 auto;
 			}
-
+			
+			body > ul {
+				padding: 1em;
+			}
+			
 			ul {
 				list-style: none;
 			}
@@ -52,8 +56,11 @@ start = lines:line* {
 
 			div.math {
 				text-align: center;
+				padding: 0.5em;
 			}
 		</style>
+		
+		${ title ? `<h1>${ title }</h1>` : ''}
 		<ul>${ lines.join('') }</ul>
 		<script>
 			var socket = new WebSocket('ws://' + location.host);
@@ -67,23 +74,46 @@ start = lines:line* {
 	`;
 }
 
+title = "\\title " title:$((!EOL .)*) { return title }
+style = "\\style " style:$((!EOL .)*) { return style }
+
 line 
 	= tag:tag? text:text_node* EOL sublines:indented_line? {
 		if (!sublines)
 			sublines = [];
 	
-		if (tag) {
-			return `
-				<li class="${ tag }">
-					<span class="tag">${ tag }</span> ${ text.join('') }
-					<ul>${ sublines.join('') }</ul>
-				</li>`;
-		} else {
-			return `
-				<li>
-					${ text.join('') }&nbsp;
-					<ul>${ sublines.join('') }</ul>
-				</li>`;
+		switch (tag) {
+			case null:
+				return `
+					<li>
+						${ text.join('') || '<span style="line-height: 0.8em">&nbsp;</span>' }
+						<ul>${ sublines.join('') }</ul>
+					</li>`;
+			
+			case 'title':
+				return `
+					<title>{ text.join('') }</title>`;
+			
+			case 'header':
+				return `
+					<li>
+						<h2>${ text.join('') }</h2>
+						<ul>${ sublines.join('') }</ul>
+					</li>`;
+			
+			case 'bullet':
+				return `
+					<li style="list-style-type: circle">
+						${ text.join('') }
+						<ul>${ sublines.join('') }</ul>
+					</li>`;
+				
+			default:
+				return `
+					<li>
+						<span class="tag">\\${ tag }</span> ${ text.join('') }
+						<ul>${ sublines.join('') }</ul>
+					</li>`;
 		}
 	}
 indented_line
@@ -92,7 +122,7 @@ indented_line
 tag
 	= "#" { return "header" }
 	/ "-" { return "bullet" }
-	/ $("\\" [a-zA-Z]+)
+	/ "\\" type:[a-zA-Z0-9]+ { return type.join('') }
 text_node = inline_command / $((!inline_command !EOL .)+)
 text_node_non_bold = inline_command / $((!"*" !inline_command !EOL .)+)
 
