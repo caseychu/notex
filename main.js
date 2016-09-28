@@ -22,3 +22,9 @@ fs.watch(file, function () {
 server.listen(0, function () {
 	open('http://localhost:' + this.address().port);
 });
+
+// Time out.
+setInterval(function () {
+	if (wss.clients.length === 0)
+		process.exit();
+}, 10000);
