@@ -55,6 +55,15 @@ start = lines:line* {
 			}
 		</style>
 		<ul>${ lines.join('') }</ul>
+		<script>
+			var socket = new WebSocket('ws://' + location.host);
+			socket.onerror = function () {
+				console.log('fail');
+			};
+			socket.onmessage = function () {
+				location.reload();
+			};
+		</script>
 	`;
 }
 
