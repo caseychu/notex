@@ -19,6 +19,5 @@ fs.watch(file, function () {
 });
 
 server.listen(0, function () {
-	console.log(this.address().port);
-	//open('http://localhost:' + this.address().port);
+	open('http://localhost:' + this.address().port);
 });
