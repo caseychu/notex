@@ -1,6 +1,7 @@
 const http = require('http');
 const fs = require('fs');
 const open = require('open');
+const retry = require('retry');
 const ws = require('ws');
 
 const notex = require('./notex.js');
@@ -8,8 +9,18 @@ const notex = require('./notex.js');
 const file = process.argv[2];
 const server = http.createServer(function (req, res) {
 	res.writeHead(200, { 'Content-type': 'text/html' });
-	res.end(notex.parse(fs.readFileSync(file).toString('utf8')));
-	// Bug: readFileSync can fail if file is locked
+	
+	// Retry because readFile can fail if the file is being saved to
+	const op = retry.operation();
+	op.attempt(function () {
+		fs.readFile(file, function (err, contents) {
+			if (op.retry(err))
+				return;
+
+			res.end(notex.parse(contents.toString('utf8')));
+		});
+	}, { minTimeout: 50 });
+	
 });
 
 const wss = new ws.Server({ server });

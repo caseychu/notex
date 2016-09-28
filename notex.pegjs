@@ -132,11 +132,13 @@ inline_command
     / "\\[" math:$((!"\\]" .)*) "\\]" {
 		return `
 			<div class="math">
-				${ katex.renderToString(trimIndentTags(math), { throwOnError: false }) }
+				${ katex.renderToString(trimIndentTags(math), { throwOnError: false, displayMode: true }) }
 			</div>`;
 	}
     / "$" math:$((!"$" .)*) "$" {
-		return `<span class="math">${ katex.renderToString(trimIndentTags(math), { throwOnError: false }) }</span>`;
+		return `<span class="math">${
+				katex.renderToString(trimIndentTags(math), { throwOnError: false })
+			}</span>`;
 	}
 	/ "*" text:text_node_non_bold* "*" { return `<b>${ text.join('') }</b>`; }
 
