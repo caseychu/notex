@@ -20,7 +20,7 @@
 
 start = title:title? style:style? lines:line* {
 	return `
-		<title>{ title || 'Untitled' }</title>
+		<title>${ title || 'Untitled' }</title>
 		<meta charset="utf-8" />
 		<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.6.0/katex.min.css" />
 		<style>
