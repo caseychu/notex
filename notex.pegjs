@@ -18,7 +18,45 @@
 	}
 }
 
-start = lines:line* { return `<ul>${ lines.join('') }</ul>`}
+start = lines:line* {
+	return `
+		<meta charset="utf-8" />
+		<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.6.0/katex.min.css" />
+		<style>
+			body {
+				width: 9in;
+				padding: 1in;
+				margin: 1em auto;
+				
+				font-family: serif;
+				font-size: 16pt;
+				line-height: 1.5em;
+			}
+
+			ul {
+				list-style: none;
+			}
+
+			.tag {
+				color: #C80000;
+				font-family: consolas;
+				font-size: 0.8em;
+				padding-right: 3px;
+			}
+
+			.math {
+				font-size: 0.8em;
+				padding: 0 2px;
+				color: blue;
+			}
+
+			div.math {
+				text-align: center;
+			}
+		</style>
+		<ul>${ lines.join('') }</ul>
+	`;
+}
 
 line 
 	= tag:tag? text:text_node* EOL sublines:indented_line? {
@@ -40,9 +78,7 @@ line
 		}
 	}
 indented_line
-	= indent lines:(!dedent line)* dedent {
-		return lines.map(line => line[1])
-	}
+	= indent lines:(!dedent line:line { return line })* dedent { return lines }
 
 tag
 	= "#" { return "header" }

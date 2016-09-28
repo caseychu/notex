@@ -1,0 +1,28 @@
+{
+  "name": "notex",
+  "version": "1.0.0",
+  "description": "A minimalist, experimental TeX-like language for note-taking.",
+  "main": "main.js",
+  "directories": {
+    "test": "tests"
+  },
+  "dependencies": {
+    "open": "^0.0.5",
+    "katex": "^0.6.0",
+    "pegjs": "^0.10.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bitsofpancake/notex.git"
+  },
+  "author": "Casey Chu",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/bitsofpancake/notex/issues"
+  },
+  "homepage": "https://github.com/bitsofpancake/notex#readme"
+}
