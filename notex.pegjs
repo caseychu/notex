@@ -19,7 +19,7 @@
 }
 
 start = title:title? style:style? lines:line* {
-	return `<!doctype html>
+	return `<!DOCTYPE html>
 		<title>${ title || 'Untitled' }</title>
 		<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.6.0/katex.min.css" />
 
@@ -40,6 +40,19 @@ start = title:title? style:style? lines:line* {
 			ul {
 				list-style: none;
 			}
+			h1, h2, h3, h4, h5, h6 {
+				margin: 1em 0 0;
+			}
+			h1 { font-size: 1.5em; }
+			h2 {
+				font-size: 1.25em;
+				/*border-bottom: 1px solid silver;
+				padding-bottom: 5px;*/
+			}
+			h3 { font-size: 1em; }
+			h4 { font-size: 1em; }
+			h5 { font-size: 1em; }
+			h6 { font-size: 1em; }
 
 			.tag {
 				color: #C80000;
@@ -55,6 +68,11 @@ start = title:title? style:style? lines:line* {
 			.katex {
 				font-size: 1em !important;
 			}
+			/*
+			.katex, .mathit, .mathbf, .mainit {
+				font-family: inherit !important;
+			}
+			*/
 		</style>
 		
 		${ title ? `<h1>${ title }</h1>` : ''}
@@ -68,6 +86,7 @@ start = title:title? style:style? lines:line* {
 				location.reload();
 			};
 		</script>
+		<script src="http://smartquotesjs.com/src/smartquotes.min.js"></script>
 	`;
 }
 
@@ -83,7 +102,7 @@ line
 			case null:
 				return `
 					<li>
-						${ text.join('') || '<span style="line-height: 0.8em">&nbsp;</span>' }
+						${ text.join('') || '<div style="height: 0.8em"></div>' }
 						<ul>${ sublines.join('') }</ul>
 					</li>`;
 			
@@ -91,10 +110,22 @@ line
 				return `
 					<title>{ text.join('') }</title>`;
 			
-			case 'header':
+			case 'h1':
 				return `
 					<li>
-						<h2>${ text.join('') }</h2>
+						<title>${ text.join('') }</title>
+						<h1>${ text.join('') }</h1>
+						<ul>${ sublines.join('') }</ul>
+					</li>`;
+			
+			case 'h2':
+			case 'h3':
+			case 'h4':
+			case 'h5':
+			case 'h6':
+				return `
+					<li>
+						<${ tag }>${ text.join('') }</${ tag }>
 						<ul>${ sublines.join('') }</ul>
 					</li>`;
 			
@@ -117,7 +148,7 @@ indented_line
 	= indent lines:(!dedent line:line { return line })* dedent { return lines }
 
 tag
-	= "#" { return "header" }
+	= header:"#"+ { return 'h' + header.length }
 	/ "-" { return "bullet" }
 	/ "\\" type:[a-zA-Z0-9]+ { return type.join('') }
 text_node = inline_command / $((!inline_command !EOL .)+)
@@ -129,12 +160,12 @@ inline_command
     / "\\[" math:$((!"\\]" .)*) "\\]" {
 		return `
 			<div class="math">
-				${ katex.renderToString(trimIndentTags(math), { throwOnError: false, displayMode: true }) }
+				${ katex.renderToString(trimIndentTags(math), { macros: {'\\R': '\\mathbb{R}'}, throwOnError: false, displayMode: true }) }
 			</div>`;
 	}
     / "$" math:$((!"$" .)*) "$" {
 		return `<span class="math">${
-				katex.renderToString(trimIndentTags(math), { throwOnError: false })
+				katex.renderToString(trimIndentTags(math), { macros: {'\\R': '\\mathbb{R}'}, throwOnError: false })
 			}</span>`;
 	}
 	/ "*" text:text_node_non_bold* "*" { return `<b>${ text.join('') }</b>`; }
