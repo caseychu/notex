@@ -30,7 +30,8 @@ indented_line
 	= indent lines:(!dedent line:line { return line })* dedent { return lines }
 
 tag
-	= header:"#"+ { return 'h' + header.length }
+	= header:"#"+ { return 'h' + (1 + header.length) }
+	/ "|" { return 'h1' }
 	/ "-" { return "bullet" }
 	/ "\\" tag:[a-zA-Z0-9]+ { return tag.join('') }
 inline_node = inline_command / $((!inline_command !EOL .)+)

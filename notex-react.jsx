@@ -39,6 +39,13 @@ NotexReact.renderLine = function ({ tag, inline, sublines }) {
 					{ NotexReact.render(sublines) }
 				</li>
 			);
+		case 'h4':
+			return (
+				<li>
+					<h4>{ NotexReact.renderInline(inline) }</h4>
+					{ NotexReact.render(sublines) }
+				</li>
+			);
 		
 		case 'bullet':
 			return (
