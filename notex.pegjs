@@ -1,6 +1,4 @@
 {
-	const katex = require('katex');
-
 	function trimIndentTags(str) {
 		const lines = str.split('\n');
 		let indentation = 0;
@@ -18,138 +16,14 @@
 	}
 }
 
-start = title:title? style:style? lines:line* {
-	return `<!DOCTYPE html>
-		<meta charset="UTF-8" />
-		<title>${ title || 'Untitled' }</title>
-		<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.6.0/katex.min.css" />
-		
-		<style>
-			body {
-				font-family: serif;
-				font-size: 14pt;
-				line-height: 1.5em;
-				
-				max-width: 8in;
-				margin: 0 auto;
-			}
-			
-			body > ul {
-				padding: 1em;
-			}
-			
-			b > b { /* uh, ugly hack */
-				font-weight: normal;
-				font-style: italic;
-			}
-			ul {
-				list-style: none;
-			}
-			h1, h2, h3, h4, h5, h6 {
-				margin: 1em 0 0;
-			}
-			h1 { font-size: 1.5em; }
-			h2 {
-				font-size: 1.25em;
-				/*border-bottom: 1px solid silver;
-				padding-bottom: 5px;*/
-			}
-			h3 { font-size: 1em; }
-			h4 { font-size: 1em; }
-			h5 { font-size: 1em; }
-			h6 { font-size: 1em; }
-
-			.tag {
-				color: #C80000;
-				font-family: consolas;
-				font-size: 0.8em;
-				padding-right: 3px;
-			}
-			
-			div.math {
-				margin: -15px 0; 
-			}
-			.math {
-				padding: 0 2px;
-				color: blue;
-			}
-			.katex {
-				font-size: 1em !important;
-			}
-			/*
-			.katex, .mathit, .mathbf, .mainit {
-				font-family: inherit !important;
-			}
-			*/
-		</style>
-		
-		${ title ? `<h1>${ title }</h1>` : ''}
-		<ul>${ lines.join('') }</ul>
-		<script>
-			var socket = new WebSocket('ws://' + location.host);
-			socket.onerror = function () {
-				console.log('fail');
-			};
-			socket.onmessage = function () {
-				location.reload();
-			};
-		</script>
-		<script src="http://smartquotesjs.com/src/smartquotes.min.js"></script>
-	`;
-}
-
-title = "\\title " title:$((!EOL .)*) { return title }
-style = "\\style " style:$((!EOL .)*) { return style }
+start = lines:line* { return lines }
 
 line 
-	= tag:tag? text:text_node* EOL sublines:indented_line? {
-		if (!sublines)
-			sublines = [];
-	
-		switch (tag) {
-			case null:
-				return `
-					<li>
-						${ text.join('') || '<div style="height: 0.8em"></div>' }
-						<ul>${ sublines.join('') }</ul>
-					</li>`;
-			
-			case 'title':
-				return `
-					<title>{ text.join('') }</title>`;
-			
-			case 'h1':
-				return `
-					<li>
-						<title>${ text.join('') }</title>
-						<h1>${ text.join('') }</h1>
-						<ul>${ sublines.join('') }</ul>
-					</li>`;
-			
-			case 'h2':
-			case 'h3':
-			case 'h4':
-			case 'h5':
-			case 'h6':
-				return `
-					<li>
-						<${ tag }>${ text.join('') }</${ tag }>
-						<ul>${ sublines.join('') }</ul>
-					</li>`;
-			
-			case 'bullet':
-				return `
-					<li style="list-style-type: circle">
-						${ text.join('') }
-						<ul>${ sublines.join('') }</ul>
-					</li>`;
-				
-			default:
-				return `
-					<li>
-						<span class="tag">\\${ tag }</span> ${ text.join('') }
-						<ul>${ sublines.join('') }</ul>
-					</li>`;
+	= tag:tag? inline:inline_node* EOL sublines:indented_line? {
+		return {
+			tag: tag,
+			inline: inline,
+			sublines: sublines || []
 		}
 	}
 indented_line
@@ -158,25 +32,35 @@ indented_line
 tag
 	= header:"#"+ { return 'h' + header.length }
 	/ "-" { return "bullet" }
-	/ "\\" type:[a-zA-Z0-9]+ { return type.join('') }
-text_node = inline_command / $((!inline_command !EOL .)+)
-text_node_non_bold = inline_command / $((!"*" !inline_command !EOL .)+)
+	/ "\\" tag:[a-zA-Z0-9]+ { return tag.join('') }
+inline_node = inline_command / $((!inline_command !EOL .)+)
+inline_node_non_bold = inline_command / $((!"*" !inline_command !EOL .)+)
 
 inline_command
-	= "\\note" text_node
-    / "\\html{{" html:$((!"}}" .)*) "}}" { return trimIndentTags(html) }
+    = "\\html{{" html:$((!"}}" .)*) "}}" {
+		return {
+			tag: 'html',
+			text: trimIndentTags(html)
+		}
+	}
     / "\\[" math:$((!"\\]" .)*) "\\]" {
-		return `
-			<div class="math">
-				${ katex.renderToString(trimIndentTags(math), { macros: {'\\R': '\\mathbb{R}'}, throwOnError: false, displayMode: true }) }
-			</div>`;
+		return {
+			tag: 'math-block',
+			text: trimIndentTags(math)
+		}
 	}
     / "$" math:$((!"$" .)*) "$" {
-		return `<span class="math">${
-				katex.renderToString(trimIndentTags(math), { macros: {'\\R': '\\mathbb{R}'}, throwOnError: false })
-			}</span>`;
+		return {
+			tag: 'math-inline',
+			text: trimIndentTags(math)
+		}
 	}
-	/ "*" text:text_node_non_bold* "*" { return `<b>${ text.join('') }</b>`; }
+	/ "*" text:inline_node_non_bold* "*" {
+		return {
+			tag: 'b',
+			text: text
+		}
+	}
 
 EOL "end of line" = "\n"
 indent "indent" = "\\indent"

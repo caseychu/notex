@@ -2,9 +2,9 @@ const peg = require('pegjs');
 const fs = require('fs');
 
 const parser = peg.generate(fs.readFileSync('notex.pegjs').toString('utf8'));
-const notex = {};
+const Notex = {};
 
-notex.parse = function (string) {
+Notex.parse = function (string) {
 	// Add indents and dedents, since PEG.js doesn't parse indents easily
 	const lines = string.split(/\r\n|\r|\n/g);
 	let indentation = 0;
@@ -21,4 +21,4 @@ notex.parse = function (string) {
 	return parser.parse(annotated);
 };
 
-module.exports = notex;
+module.exports = Notex;
