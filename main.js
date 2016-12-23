@@ -14,17 +14,23 @@ const server = http.createServer(function (req, res) {
 	
 	switch (url.parse(req.url).pathname) {
 		case '/':
-			// Retry because readFile can fail if the file is being saved to
-			const op = retry.operation();
-			op.attempt(function () {
-				fs.readFile(file, function (err, contents) {
-					if (op.retry(err))
-						return;
-						
-					res.writeHead(200, { 'Content-type': 'text/html' });
-					res.end(renderHTML(contents.toString('utf8')));
-				});
-			}, { minTimeout: 50 });
+			read().then(function (contents) {
+				res.writeHead(200, { 'Content-type': 'text/html' });
+				res.end(renderHTML(contents));
+			});
+			return;
+		
+		case '/script.js':
+			fs.readFile('./client/script.js', function (err, contents) {
+				res.writeHead(200, { 'Content-type': 'text/javascript' });
+				res.end(contents.toString('utf8'));
+			});
+			return;
+		case '/style.css':
+			fs.readFile('./client/style.css', function (err, contents) {
+				res.writeHead(200, { 'Content-type': 'text/css' });
+				res.end(contents.toString('utf8'));
+			});
 			return;
 		
 		default:
@@ -36,8 +42,10 @@ const server = http.createServer(function (req, res) {
 
 const wss = new ws.Server({ server });
 fs.watch(file, function () {
-	wss.clients.forEach(function (client) {
-		client.send('reload');
+	read().then(function (contents) {
+		wss.clients.forEach(function (client) {
+			client.send(JSON.stringify(Notex.parse(contents)));
+		});
 	});
 });
 
@@ -51,82 +59,38 @@ setInterval(function () {
 		process.exit();
 }, 10000);
 
+function read() {
+	return new Promise(function (resolve, reject) {
+		
+		// Retry because readFile can fail if the file is being saved to
+		const op = retry.operation();
+		op.attempt(function () {
+			fs.readFile(file, function (err, contents) {
+				if (op.retry(err))
+					return;
+				resolve(contents.toString('utf8'));
+			});
+		}, { minTimeout: 50 });
+	});
+}
+
 function renderHTML(contents) {
 	const parsed = Notex.parse(contents);
 	return preamble + ReactDOMServer.renderToString(NotexReact.render(parsed)) + postscript;
 }
 
 const preamble = `<!DOCTYPE html>
+<html>
+<head>
 	<meta charset="UTF-8" />
 	<title></title>
 	<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.6.0/katex.min.css" />
-	
-	<style>
-		body {
-			font-family: serif;
-			font-size: 14pt;
-			line-height: 1.5em;
-			
-			max-width: 8in;
-			margin: 0 auto;
-		}
-		
-		body > ul {
-			padding: 1em;
-		}
-		
-		b > b { /* uh, ugly hack */
-			font-weight: normal;
-			font-style: italic;
-		}
-		ul {
-			list-style: none;
-		}
-		h1, h2, h3, h4, h5, h6 {
-			margin: 1em 0 0;
-		}
-		h1 { font-size: 1.5em; }
-		h2 {
-			font-size: 1.25em;
-			/*border-bottom: 1px solid silver;
-			padding-bottom: 5px;*/
-		}
-		h3 { font-size: 1em; }
-		h4 { font-size: 1em; }
-		h5 { font-size: 1em; }
-		h6 { font-size: 1em; }
-	
-		.bullet-circle {
-			list-style-type: circle;
-		}
-		.tag {
-			color: #C80000;
-			font-family: consolas;
-			font-size: 0.8em;
-			padding-right: 3px;
-		}
-		
-		div.math {
-			margin: -15px 0; 
-		}
-		.math {
-			padding: 0 2px;
-			color: blue;
-		}
-		.katex {
-			font-size: 1em !important;
-		}
-	</style>`;
+	<link rel="stylesheet" type="text/css" href="style.css" />
+	</head>
+	<body>`;
 	
 const postscript = `
-	<script>
-			var socket = new WebSocket('ws://' + location.host);
-			socket.onerror = function () {
-				console.log('fail');
-			};
-			socket.onmessage = function () {
-				location.reload();
-			};
-		</script>
+		<script src="script.js"></script>
 		<script src="http://smartquotesjs.com/src/smartquotes.min.js"></script>
-`;
+	</body>
+</html>`;
