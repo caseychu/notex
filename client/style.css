@@ -32,9 +32,13 @@ h4 { font-size: 1em; }
 h5 { font-size: 1em; }
 h6 { font-size: 1em; }
 
+li {
+	min-height: 0.8em;
+}
 .bullet-circle {
 	list-style-type: circle;
 }
+
 .tag {
 	color: #C80000;
 	font-family: consolas;
