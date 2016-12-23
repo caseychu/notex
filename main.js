@@ -14,26 +14,22 @@ const file = process.argv[2];
 const server = http.createServer(function (req, res) {
 	const pathname = url.parse(req.url).pathname;
 	
-	if (pathname === '/') {
+	if (pathname === '/')
 		read().then(function (contents) {
 			res.writeHead(200, { 'Content-type': 'text/html' });
 			res.end(renderHTML(contents));
 		});
-		return;
-	}
 	
-	if (pathname.indexOf('/client/') === 0) {
+	else if (pathname.indexOf('/client/') === 0)
 		serveStatic('./client', pathname.substr('/client/'.length), req, res);
-		return;
-	}
 	
-	if (pathname.indexOf('/katex/') === 0) {
+	else if (pathname.indexOf('/katex/') === 0)
 		serveStatic(path.join(path.dirname(require.resolve('katex')), 'dist'), pathname.substr('/katex/'.length), req, res);
-		return;
-	}
 	
-	res.writeHead(404);
-	res.end('Not found');
+	else {
+		res.writeHead(404);
+		res.end('Not found');
+	}
 });
 
 const wss = new ws.Server({ server });
@@ -48,6 +44,13 @@ fs.watch(file, function () {
 server.listen(0, function () {
 	open('http://localhost:' + server.address().port);
 });
+
+// Time out.
+setInterval(function () {
+	if (wss.clients.length === 0)
+		process.exit();
+}, 10000);
+
 
 const mimeTypes = {
 	'.css': 'text/css',
@@ -79,12 +82,6 @@ function serveStatic(root, pathname, req, res) {
 	});
 }
 
-// Time out.
-setInterval(function () {
-	if (wss.clients.length === 0)
-		process.exit();
-}, 10000);
-
 function read() {
 	return new Promise(function (resolve, reject) {
 		
@@ -101,21 +98,18 @@ function read() {
 }
 
 function renderHTML(contents) {
-	const parsed = Notex.parse(contents);
-	return preamble + ReactDOMServer.renderToString(NotexReact.render(parsed)) + postscript;
+	return `
+		<!DOCTYPE html>
+		<html>
+			<head>
+				<meta charset="UTF-8" />
+				<title></title>
+				<link rel="stylesheet" type="text/css" href="/katex/katex.min.css" />
+				<link rel="stylesheet" type="text/css" href="/client/style.css" />
+				<script src="/client/script.js"></script>
+			</head>
+			<body>
+				${ReactDOMServer.renderToString(NotexReact.render(Notex.parse(contents)))}
+			</body>
+		</html>`;
 }
-
-const preamble = `<!DOCTYPE html>
-<html>
-<head>
-	<meta charset="UTF-8" />
-	<title></title>
-	<link rel="stylesheet" type="text/css" href="/katex/katex.min.css" />
-	<link rel="stylesheet" type="text/css" href="/client/style.css" />
-	</head>
-	<body>`;
-	
-const postscript = `
-		<script src="/client/script.js"></script>
-	</body>
-</html>`;
