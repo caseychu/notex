@@ -20,13 +20,14 @@
 
 start = title:title? style:style? lines:line* {
 	return `<!DOCTYPE html>
+		<meta charset="UTF-8" />
 		<title>${ title || 'Untitled' }</title>
 		<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.6.0/katex.min.css" />
-
+		
 		<style>
 			body {
 				font-family: serif;
-				font-size: 16pt;
+				font-size: 14pt;
 				line-height: 1.5em;
 				
 				max-width: 8in;
@@ -37,6 +38,10 @@ start = title:title? style:style? lines:line* {
 				padding: 1em;
 			}
 			
+			b > b { /* uh, ugly hack */
+				font-weight: normal;
+				font-style: italic;
+			}
 			ul {
 				list-style: none;
 			}
@@ -60,7 +65,10 @@ start = title:title? style:style? lines:line* {
 				font-size: 0.8em;
 				padding-right: 3px;
 			}
-
+			
+			div.math {
+				margin: -15px 0; 
+			}
 			.math {
 				padding: 0 2px;
 				color: blue;
