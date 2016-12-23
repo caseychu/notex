@@ -51,7 +51,7 @@ NotexReact.renderLine = function ({ tag, inline, sublines }) {
 		default:
 			return (
 				<li>
-					<span className="tag">\\{ tag }</span> { NotexReact.renderInline(inline) }
+					<span className="tag">\{ tag }</span> { NotexReact.renderInline(inline) }
 					{ NotexReact.render(sublines) }
 				</li>
 			);
