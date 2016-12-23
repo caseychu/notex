@@ -91,6 +91,5 @@ const preamble = `<!DOCTYPE html>
 	
 const postscript = `
 		<script src="script.js"></script>
-		<script src="http://smartquotesjs.com/src/smartquotes.min.js"></script>
 	</body>
 </html>`;

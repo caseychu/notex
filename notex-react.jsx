@@ -1,5 +1,6 @@
-const katex = require('katex');
 const React = require('react');
+const katex = require('katex');
+const smartquotes = require('smartquotes');
 
 const NotexReact = {};
 
@@ -58,7 +59,7 @@ NotexReact.renderLine = function ({ tag, inline, sublines }) {
 };
 
 NotexReact.renderInline = function (nodes) {
-	return nodes.map(node => typeof node === 'string' ? node : NotexReact.renderInlineCommand(node));
+	return nodes.map(node => typeof node === 'string' ? smartquotes.string(node) : NotexReact.renderInlineCommand(node));
 };
 
 NotexReact.renderInlineCommand = function ({ tag, text }) {
