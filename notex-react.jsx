@@ -11,46 +11,14 @@ NotexReact.render = function (lines) {
 NotexReact.renderLine = function ({ tag, inline, sublines }) {
 	switch (tag) {
 		case null:
-			return (
-				<li>
-					{ NotexReact.renderInline(inline) }
-					{ NotexReact.render(sublines) }
-				</li>
-			);
-		
 		case 'h1':
-			return (
-				<li>
-					<h1>{ NotexReact.renderInline(inline) }</h1>
-					{ NotexReact.render(sublines) }
-				</li>
-			);
 		case 'h2':
-			return (
-				<li>
-					<h2>{ NotexReact.renderInline(inline) }</h2>
-					{ NotexReact.render(sublines) }
-				</li>
-			);
 		case 'h3':
-			return (
-				<li>
-					<h3>{ NotexReact.renderInline(inline) }</h3>
-					{ NotexReact.render(sublines) }
-				</li>
-			);
 		case 'h4':
-			return (
-				<li>
-					<h4>{ NotexReact.renderInline(inline) }</h4>
-					{ NotexReact.render(sublines) }
-				</li>
-			);
-		
 		case 'bullet':
 			return (
-				<li className="bullet-circle">
-					{ NotexReact.renderInline(inline) }
+				<li className={tag}>
+					<div className="inline">{ NotexReact.renderInline(inline) }</div>
 					{ NotexReact.render(sublines) }
 				</li>
 			);
@@ -58,7 +26,7 @@ NotexReact.renderLine = function ({ tag, inline, sublines }) {
 		default:
 			return (
 				<li>
-					<span className="tag">\{ tag }</span> { NotexReact.renderInline(inline) }
+					<div className="inline"><span className="tag">\{ tag }</span> { NotexReact.renderInline(inline) }</div>
 					{ NotexReact.render(sublines) }
 				</li>
 			);
