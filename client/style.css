@@ -11,10 +11,6 @@ body > ul {
 	padding: 1em;
 }
 
-b > b { /* uh, ugly hack */
-	font-weight: normal;
-	font-style: italic;
-}
 ul {
 	list-style: none;
 }

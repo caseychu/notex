@@ -60,6 +60,8 @@ NotexReact.renderInlineCommand = function ({ tag, text }) {
 		
 		case 'b':
 			return <b>{ NotexReact.renderInline(text) }</b>;
+		case 'i':
+			return <i>{ NotexReact.renderInline(text) }</i>;
 	}
 };
 

@@ -56,7 +56,13 @@ inline_command
 			text: trimIndentTags(math)
 		}
 	}
-	/ "*" text:inline_node_non_bold* "*" {
+	/ "**" text:inline_node_non_bold+ "**" {
+		return {
+			tag: 'i',
+			text: text
+		}
+	}
+	/ "*" text:inline_node_non_bold+ "*" {
 		return {
 			tag: 'b',
 			text: text
