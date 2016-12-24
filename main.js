@@ -5,10 +5,7 @@ const path = require('path');
 const retry = require('retry');
 const url = require('url');
 const ws = require('ws');
-const ReactDOMServer = require('react-dom/server');
-
 const Notex = require('./notex.js');
-const NotexReact = require('./notex-react.js');
 
 const file = process.argv[2];
 const server = http.createServer(function (req, res) {
@@ -106,10 +103,13 @@ function renderHTML(contents) {
 				<title></title>
 				<link rel="stylesheet" type="text/css" href="/katex/katex.min.css" />
 				<link rel="stylesheet" type="text/css" href="/client/style.css" />
-				<script src="/client/script.js"></script>
 			</head>
 			<body>
-				${ReactDOMServer.renderToString(NotexReact.render(Notex.parse(contents)))}
+				<div id="main"></div>
+				<script src="/client/script.js"></script>
+				<script>
+					render(${JSON.stringify(Notex.parse(contents))});
+				</script>
 			</body>
 		</html>`;
 }
