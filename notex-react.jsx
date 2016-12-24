@@ -40,7 +40,7 @@ NotexReact.renderInline = function (nodes) {
 NotexReact.renderInlineCommand = function ({ tag, text }) {
 	switch (tag) {
 		case 'html':
-			return html;
+			return <span dangerouslySetInnerHTML={{__html: html}} />;
 	
 		case 'math-block':
 		case 'math-inline':
