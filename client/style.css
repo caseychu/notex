@@ -2,12 +2,14 @@ body {
 	font-family: serif;
 	font-size: 14pt;
 	line-height: 1.5em;
-	
-	max-width: 8in;
-	margin: 0 auto;
+	margin: 0;
 }
 
-body > ul {
+#main {
+	margin: 0 auto;
+	max-width: 8in;
+}
+#main > ul {
 	padding: 1em;
 }
 
