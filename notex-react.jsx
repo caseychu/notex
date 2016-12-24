@@ -5,7 +5,7 @@ const smartquotes = require('smartquotes');
 const NotexReact = {};
 
 NotexReact.render = function (lines) {
-	return <ul>{ lines.map(NotexReact.renderLine) }</ul>;
+	return lines.length ? <ul>{ lines.map(NotexReact.renderLine) }</ul> : null;
 };
 
 NotexReact.renderLine = function ({ tag, inline, sublines }) {

@@ -47,6 +47,11 @@ li {
 	margin: 0.5em 0 0;
 }
 
+.h1, .h2, .h3, .h4 {
+	/* Apparently these don't work in Chrome */
+	page-break-after: avoid;
+}
+
 /*
 body {
 	counter-reset: h2 h3 h4;
