@@ -86,10 +86,14 @@ body {
 	padding-right: 3px;
 }
 
-div.math {
-	margin: -15px 0; 
+.math-block {
+	display: block;
+	margin: -15px 0;
+	padding: 0 2px;
+	color: blue; 
 }
-.math {
+.math-inline {
+	display: inline;
 	padding: 0 2px;
 	color: blue;
 }

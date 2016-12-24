@@ -44,21 +44,19 @@ NotexReact.renderInlineCommand = function ({ tag, text }) {
 	
 		case 'math-block':
 		case 'math-inline':
-			let math;
 			try {
-				math = katex.renderToString(text, {
-					macros: {'\\R': '\\mathbb{R}'},
-					throwOnError: false,
-					displayMode: tag === 'math-block'
-				});
+				return (
+					<span className={tag} dangerouslySetInnerHTML={{
+						__html: katex.renderToString(text, {
+							macros: {'\\R': '\\mathbb{R}'},
+							throwOnError: false,
+							displayMode: tag === 'math-block',
+							errorColor: '#C80000'
+						})
+					}} />);
 			} catch (e) {
-				math = <tt className="math-error">{ e.message }</tt>;
+				return <span className={tag} style={{color: '#C80000'}}>{ e.message }</span>;
 			}
-			
-			if (tag === 'math-block')
-				return <div className="math" dangerouslySetInnerHTML={{__html: math}} />;
-			else if (tag === 'math-inline')
-				return <span className="math" dangerouslySetInnerHTML={{__html: math}} />;
 		
 		case 'b':
 			return <b>{ NotexReact.renderInline(text) }</b>;
