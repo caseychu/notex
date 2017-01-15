@@ -46,7 +46,7 @@ server.listen(0, function () {
 setInterval(function () {
 	if (wss.clients.length === 0)
 		process.exit();
-}, 10000);
+}, 30000);
 
 
 const mimeTypes = {
