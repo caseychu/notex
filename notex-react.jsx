@@ -1,6 +1,17 @@
+// Run `npm run compile` to recompile
+
 const React = require('react');
 const katex = require('katex');
 const smartquotes = require('smartquotes');
+
+const macros = {
+	'\\N': '\\mathbb{N}',
+	'\\Z': '\\mathbb{Z}',
+	'\\Q': '\\mathbb{Q}',
+	'\\R': '\\mathbb{R}',
+	'\\C': '\\mathbb{C}',
+	'\\E': '\\mathbb{E}'
+};
 
 const NotexReact = {};
 
@@ -48,7 +59,7 @@ NotexReact.renderInlineCommand = function ({ tag, text }) {
 				return (
 					<span className={tag} dangerouslySetInnerHTML={{
 						__html: katex.renderToString(text, {
-							macros: {'\\R': '\\mathbb{R}'},
+							macros: macros,
 							throwOnError: false,
 							displayMode: tag === 'math-block',
 							errorColor: '#C80000'

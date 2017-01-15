@@ -1,3 +1,5 @@
+// Run `npm run compile` to recompile
+
 const ReactDOM = require('react-dom');
 const NotexReact = require('../notex-react.js');
 
