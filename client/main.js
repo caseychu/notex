@@ -4,7 +4,14 @@ const ReactDOM = require('react-dom');
 const NotexReact = require('../notex-react.js');
 
 window.render = function render(doc) {
-	ReactDOM.render(NotexReact.render(doc), document.getElementById('main'));
+	// If we're already at the bottom, scroll to the bottom.
+	// Possibly non-cross-browser!
+	var atBottom = window.scrollY + document.documentElement.clientHeight === document.documentElement.scrollHeight;
+
+	ReactDOM.render(NotexReact.render(doc), document.getElementById('main'), function () {
+		if (atBottom)
+			window.scrollTo(0, document.documentElement.scrollHeight);
+	});
 	
 	const h1 = document.querySelector('.h1 > .inline');
 	document.title = h1 ? h1.innerText : 'Untitled';
