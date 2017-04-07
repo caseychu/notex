@@ -13,13 +13,21 @@ const macros = {
 	'\\E': '\\mathbb{E}'
 };
 
-const NotexReact = {};
+function NotexDocument(doc) {
+	return <Lines doc={doc} nodes={doc} />
+}
 
-NotexReact.render = function (lines) {
-	return lines.length ? <ul>{ lines.map(NotexReact.renderLine) }</ul> : null;
-};
+function Lines({ doc, nodes }) {
+	if (nodes.length)
+		return (
+			<ul>
+				{ nodes.map((line, i) => <Line {...line} key={i} doc={doc} />) }
+			</ul>
+		);
+	return null;
+}
 
-NotexReact.renderLine = function ({ tag, inline, sublines }) {
+function Line({ doc, tag, inline, sublines }) {
 	switch (tag) {
 		case null:
 		case 'h1':
@@ -29,29 +37,38 @@ NotexReact.renderLine = function ({ tag, inline, sublines }) {
 		case 'bullet':
 			return (
 				<li className={tag}>
-					<div className="inline">{ NotexReact.renderInline(inline) }</div>
-					{ NotexReact.render(sublines) }
+					<div className="inline">
+						<InlineText nodes={inline} />
+					</div>
+					<Lines nodes={sublines} doc={doc} />
 				</li>
 			);
-
+			
 		default:
 			return (
 				<li>
-					<div className="inline"><span className="tag">\{ tag }</span> { NotexReact.renderInline(inline) }</div>
-					{ NotexReact.render(sublines) }
+					<div className="inline">
+						<span className="tag">\{ tag }</span>
+						<InlineText nodes={inline} />
+					</div>
+					<Lines nodes={sublines} doc={doc} />
 				</li>
 			);
 	}
-};
+}
 
-NotexReact.renderInline = function (nodes) {
-	return nodes.map(node => typeof node === 'string' ? smartquotes.string(node) : NotexReact.renderInlineCommand(node));
-};
+function InlineText({ nodes }) {
+	return (
+		<span>
+			{ nodes.map((node, i) => typeof node === 'string' ? smartquotes.string(node) : <InlineCommand {...node} key={i} />) }
+		</span>
+	);
+}
 
-NotexReact.renderInlineCommand = function ({ tag, text }) {
+function InlineCommand({ tag, text }) {
 	switch (tag) {
 		case 'html':
-			return <span dangerouslySetInnerHTML={{__html: html}} />;
+			return <span dangerouslySetInnerHTML={{__html: text}} />;
 	
 		case 'math-block':
 		case 'math-inline':
@@ -70,10 +87,10 @@ NotexReact.renderInlineCommand = function ({ tag, text }) {
 			}
 		
 		case 'b':
-			return <b>{ NotexReact.renderInline(text) }</b>;
+			return <b><InlineText nodes={text} /></b>;
 		case 'i':
-			return <i>{ NotexReact.renderInline(text) }</i>;
+			return <i><InlineText nodes={text} /></i>;
 	}
 };
 
-module.exports = NotexReact;
+module.exports = NotexDocument;

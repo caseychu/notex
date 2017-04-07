@@ -1,14 +1,14 @@
 // Run `npm run compile` to recompile
 
 const ReactDOM = require('react-dom');
-const NotexReact = require('../notex-react.js');
+const NotexDocument = require('../notex-react.js');
 
 window.render = function render(doc) {
 	// If we're already at the bottom, scroll to the bottom after rerendering.
 	// Possibly non-cross-browser!
 	var atBottom = window.scrollY + document.documentElement.clientHeight === document.documentElement.scrollHeight;
 
-	ReactDOM.render(NotexReact.render(doc), document.getElementById('main'), function () {
+	ReactDOM.render(NotexDocument(doc), document.getElementById('main'), function () {
 		if (atBottom)
 			window.scrollTo(0, document.documentElement.scrollHeight);
 	});
