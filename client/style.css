@@ -5,6 +5,11 @@ body {
 	margin: 0;
 }
 
+a, a:visited {
+	text-decoration: none;
+	color: #0000dd;
+}
+
 #main {
 	margin: 0 auto;
 	max-width: 8in;
@@ -96,4 +101,39 @@ body {
 }
 .katex {
 	font-size: 1em !important;
+}
+
+.toc {
+	margin: 0 1em 0;
+}
+.toc .header {
+	margin: 0 0 0.5em;
+	font-weight: bold;
+	font-size: 1.15em;
+	text-align: center;
+}
+.toc ul {
+	padding: 0 1em;
+	column-count: 2;
+}
+.toc li {
+	line-height: 1.15em;
+	padding: 0.175em 0;
+}
+.toc-h2 { 
+	font-weight: bold;
+	list-style: none;
+	margin: .75em 0 0;
+}
+.toc-h2:first-child {
+	margin-top: 0;
+}
+.toc-h3 {
+
+}
+.toc-h4 { 
+	list-style: disc;
+	margin-left: 2em;
+	font-size: 0.9em;
+	line-height: 1.5em;
 }

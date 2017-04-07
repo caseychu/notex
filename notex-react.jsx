@@ -37,10 +37,18 @@ function Line({ doc, tag, inline, sublines }) {
 		case 'bullet':
 			return (
 				<li className={tag}>
+					{ ['h2', 'h3', 'h4'].includes(tag) ? <a name={slugify(inline)} /> : null }
 					<div className="inline">
 						<InlineText nodes={inline} />
 					</div>
 					<Lines nodes={sublines} doc={doc} />
+				</li>
+			);
+
+		case 'tableofcontents':
+			return (
+				<li>
+					<TableOfContents doc={doc} />
 				</li>
 			);
 			
@@ -92,5 +100,40 @@ function InlineCommand({ tag, text }) {
 			return <i><InlineText nodes={text} /></i>;
 	}
 };
+
+function TableOfContents({ doc }) {
+	// Hacky. Ideally, we would call something like doc.getHierarchy()
+	
+	// Assume headers are on the first level of indents
+	return (
+		<div className="toc"> 
+			<div className="header">Table of Contents</div>
+			<ul>
+				{ doc
+					.filter(line => ['h2', 'h3', 'h4'].includes(line.tag))
+					.map((line, i) => <TableOfContentsLine {...line} key={i} />) }
+			</ul>
+		</div>
+	);
+}
+
+function TableOfContentsLine({ tag, inline }) {
+	return (
+		<li className={'toc-' + tag}>
+			<a href={'#' + slugify(inline)}>
+				<InlineText nodes={inline} />
+			</a>
+		</li>
+	);
+}
+
+function slugify(nodes) {
+	return nodes
+		.filter(node => typeof node === 'string')
+		.join('')
+		.trim()
+		.toLowerCase()
+		.replace(/\W+/g, '-');
+}
 
 module.exports = NotexDocument;
