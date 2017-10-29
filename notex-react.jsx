@@ -10,7 +10,8 @@ const macros = {
 	'\\Q': '\\mathbb{Q}',
 	'\\R': '\\mathbb{R}',
 	'\\C': '\\mathbb{C}',
-	'\\E': '\\mathbb{E}'
+	'\\E': '\\mathbb{E}',
+	'\\argmax': '\\mathop{\\mathrm{arg\\,max}}\\limits',
 };
 
 function NotexDocument(doc) {
@@ -73,17 +74,18 @@ function InlineText({ nodes }) {
 	);
 }
 
-function InlineCommand({ tag, text }) {
+function InlineCommand(command) {
+	var tag = command.tag;
 	switch (tag) {
 		case 'html':
-			return <span dangerouslySetInnerHTML={{__html: text}} />;
+			return <span dangerouslySetInnerHTML={{__html: command.text}} />;
 	
 		case 'math-block':
 		case 'math-inline':
 			try {
 				return (
 					<span className={tag} dangerouslySetInnerHTML={{
-						__html: katex.renderToString(text, {
+						__html: katex.renderToString(command.text, {
 							macros: macros,
 							throwOnError: false,
 							displayMode: tag === 'math-block',
@@ -95,9 +97,12 @@ function InlineCommand({ tag, text }) {
 			}
 		
 		case 'b':
-			return <b><InlineText nodes={text} /></b>;
+			return <b><InlineText nodes={command.text} /></b>;
 		case 'i':
-			return <i><InlineText nodes={text} /></i>;
+			return <i><InlineText nodes={command.text} /></i>;
+			
+		case 'link':
+			return <a href={command.url} target="_blank" rel="noopener noreferrer"><InlineText nodes={command.text} /></a>;
 	}
 };
 
@@ -105,13 +110,12 @@ function TableOfContents({ doc }) {
 	// Hacky. Ideally, we would call something like doc.getHierarchy()
 	
 	// Assume headers are on the first level of indents
+	const headers = doc.filter(line => ['h2', 'h3', 'h4'].includes(line.tag));
 	return (
 		<div className="toc"> 
-			<div className="header">Table of Contents</div>
-			<ul>
-				{ doc
-					.filter(line => ['h2', 'h3', 'h4'].includes(line.tag))
-					.map((line, i) => <TableOfContentsLine {...line} key={i} />) }
+			<div className="header">Table of contents</div>
+			<ul style={{ 'columnCount': headers.length >= 10 ? 2 : 1 }}>
+				{ headers.map((line, i) => <TableOfContentsLine {...line} key={i} />) }
 			</ul>
 		</div>
 	);

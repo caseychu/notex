@@ -7,7 +7,7 @@ body {
 
 a, a:visited {
 	text-decoration: none;
-	color: #0000dd;
+	color: #0000cc;
 }
 
 #main {
@@ -114,7 +114,6 @@ body {
 }
 .toc ul {
 	padding: 0 1em;
-	column-count: 2;
 }
 .toc li {
 	line-height: 1.15em;

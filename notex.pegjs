@@ -36,6 +36,7 @@ tag
 	/ "\\" tag:[a-zA-Z0-9]+ { return tag.join('') }
 inline_node = inline_command / $((!inline_command !EOL .)+)
 inline_node_non_bold = inline_command / $((!"*" !inline_command !EOL .)+)
+inline_node_non_link = inline_command / $((!"]" !inline_command !EOL .)+)
 
 inline_command
     = "\\html{{" html:$((!"}}" .)*) "}}" {
@@ -66,6 +67,13 @@ inline_command
 		return {
 			tag: 'b',
 			text: text
+		}
+	}
+	/ "[" text:inline_node_non_link+ "](" url:$((!")" .)*) ")" {
+		return {
+			tag: 'link',
+			text: text,
+			url: url
 		}
 	}
 
