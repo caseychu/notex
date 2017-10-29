@@ -2,7 +2,7 @@
   "name": "notex",
   "version": "1.0.0",
   "description": "A minimalist, experimental TeX-like language for note-taking.",
-  "main": "main.js",
+  "main": "notex.js",
   "directories": {
     "test": "tests"
   },
