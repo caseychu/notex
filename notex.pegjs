@@ -77,6 +77,11 @@ inline_command
 			url: url
 		}
 	}
+	/ "\\tableofcontents" {
+		return {
+			tag: 'tableofcontents'
+		}
+	}
 
 EOL "end of line" = "\n"
 indent "indent" = "\\indent"
