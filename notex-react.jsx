@@ -39,6 +39,7 @@ function Line({ doc, tag, inline, sublines }) {
 		case 'bullet':
 		case 'meta':
 		case 'float':
+		case 'numerical':
 			return (
 				<li className={tag}>
 					{ ['h2', 'h3', 'h4'].includes(tag) ? <a name={slugify(inline)} /> : null }
