@@ -32,7 +32,8 @@ indented_line
 tag
 	= header:"#"+ { return 'h' + (1 + header.length) }
 	/ "|" { return 'h1' }
-	/ "-" { return "bullet" }
+	/ "-" { return 'bullet' }
+	/ number:[0-9]+ "." { return 'numerical#' + number }
 	/ "\\" tag:[a-zA-Z0-9]+ { return tag.join('') }
 inline_node = inline_command / $((!inline_command !EOL .)+)
 inline_node_non_bold = inline_command / $((!"*" !inline_command !EOL .)+)

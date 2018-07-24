@@ -29,17 +29,30 @@ function Lines({ doc, nodes }) {
 }
 
 function Line({ doc, tag, inline, sublines }) {
-	switch (tag) {
+	const parts = tag ? tag.split('#') : [tag];
+	switch (parts[0]) {
 		case null:
 		case 'h1':
 		case 'h2':
 		case 'h3':
 		case 'h4':
 		case 'bullet':
+		case 'meta':
 			return (
 				<li className={tag}>
 					{ ['h2', 'h3', 'h4'].includes(tag) ? <a name={slugify(inline)} /> : null }
 					<div className="inline">
+						<InlineText nodes={inline} />
+					</div>
+					<Lines nodes={sublines} doc={doc} />
+				</li>
+			);
+			
+		case 'numerical':
+			return (
+				<li className="numerical">
+					<div className="inline">
+						<span className="index">{ parts[1] }.</span>
 						<InlineText nodes={inline} />
 					</div>
 					<Lines nodes={sublines} doc={doc} />

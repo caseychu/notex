@@ -81,6 +81,13 @@ body {
 .bullet {
 	list-style-type: circle;
 }
+.numerical {
+	position: relative;
+}
+.numerical .index {
+	position: absolute;
+	left: -1.2em;  /* hacky but gets the job done */
+}
 
 .tag {
 	color: #C80000;

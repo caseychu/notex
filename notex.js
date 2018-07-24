@@ -1,7 +1,7 @@
 const peg = require('pegjs');
 const fs = require('fs');
 
-const parser = peg.generate(fs.readFileSync(__dirname + 'notex.pegjs').toString('utf8'));
+const parser = peg.generate(fs.readFileSync(__dirname + '/notex.pegjs').toString('utf8'));
 const Notex = {};
 
 Notex.parse = function (string) {
