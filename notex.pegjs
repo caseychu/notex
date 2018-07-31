@@ -82,6 +82,11 @@ inline_command
 			tag: 'tableofcontents'
 		}
 	}
+	/ "--" {
+		return {
+			tag: 'dash'
+		}
+	}
 
 EOL "end of line" = "\n"
 indent "indent" = "\\indent"

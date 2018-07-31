@@ -21,8 +21,8 @@ const server = http.createServer(function (req, res) {
 		serveStatic('./client', pathname.substr('/client/'.length), req, res);
 	
 	else if (pathname.indexOf('/katex/') === 0)
-		serveStatic(path.join(path.dirname(require.resolve('katex')), 'dist'), pathname.substr('/katex/'.length), req, res);
-	
+		serveStatic(path.dirname(require.resolve('katex')), pathname.substr('/katex/'.length), req, res);
+		
 	else {
 		res.writeHead(404);
 		res.end('Not found');
@@ -95,8 +95,7 @@ function read() {
 }
 
 function renderHTML(contents) {
-	return `
-		<!DOCTYPE html>
+	return `<!DOCTYPE html>
 		<html>
 			<head>
 				<meta charset="UTF-8" />

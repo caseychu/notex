@@ -29,7 +29,11 @@ function Lines({ doc, nodes }) {
 }
 
 function Line({ doc, tag, inline, sublines }) {
-	const parts = tag ? tag.split('#') : [tag];
+	let parts = [tag];
+	if (tag && tag.includes('#')) {
+		parts = tag.split('#');
+		tag = parts[0];
+	}
 	switch (parts[0]) {
 		case null:
 		case 'h1':
@@ -104,6 +108,8 @@ function InlineCommand(command) {
 			
 		case 'tableofcontents':
 			return <TableOfContents doc={command.doc} />;
+		case 'dash':
+			return <span>{'\u2014'}</span>;
 	}
 };
 
