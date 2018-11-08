@@ -70,6 +70,12 @@ inline_command
 			text: text
 		}
 	}
+	/ "/*" comment:$((!"*/" .)*) "*/" {
+		return {
+			tag: 'comment',
+			text: comment
+		}
+	}
 	/ "[" text:inline_node_non_link+ "](" url:$((!")" .)*) ")" {
 		return {
 			tag: 'link',

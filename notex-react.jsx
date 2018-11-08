@@ -110,6 +110,9 @@ function InlineCommand(command) {
 			return <TableOfContents doc={command.doc} />;
 		case 'dash':
 			return <span>{'\u2014'}</span>;
+		
+		case 'comment':
+			return null;
 	}
 };
 
