@@ -30,8 +30,29 @@ const server = http.createServer(function (req, res) {
 });
 
 const wss = new ws.Server({ server });
+let emptyFileTimeout = null;
 fs.watch(file, function () {
 	read().then(function (contents) {
+
+		// If the file is empty, wait a bit sending the empty file.
+		if (!contents) {
+			if (!emptyFileTimeout) {
+				emptyFileTimeout = setTimeout(function () {
+					emptyFileTimeout = null;
+					wss.clients.forEach(function (client) {
+						client.send(JSON.stringify(Notex.parse('')));
+					});
+				}, 1000);
+			}
+			return;
+		}
+		
+		// Once the file is not empty, cancel the empty file timeout.
+		if (emptyFileTimeout) {
+			clearTimeout(emptyFileTimeout);
+			emptyFileTimeout = null;
+		}
+
 		wss.clients.forEach(function (client) {
 			client.send(JSON.stringify(Notex.parse(contents)));
 		});
