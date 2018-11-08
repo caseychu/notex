@@ -3,14 +3,17 @@
 const ReactDOM = require('react-dom');
 const NotexDocument = require('../notex-react.js');
 
-window.render = function render(doc) {
+window.render = function (doc) {
 	// If we're already at the bottom, scroll to the bottom after rerendering.
 	// Possibly non-cross-browser!
-	var atBottom = window.scrollY + document.documentElement.clientHeight === document.documentElement.scrollHeight;
+	var atBottom = window.scrollY && window.scrollY + document.documentElement.clientHeight === document.documentElement.scrollHeight;
 
+	console.log('received doc of length ' + doc.length);
 	ReactDOM.render(NotexDocument(doc), document.getElementById('main'), function () {
-		if (atBottom)
+		if (atBottom) {
+			console.log('scrolling to the bottom');
 			window.scrollTo(0, document.documentElement.scrollHeight);
+		}
 	});
 	
 	const h1 = document.querySelector('.h1 > .inline');
