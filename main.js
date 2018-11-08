@@ -18,7 +18,7 @@ const server = http.createServer(function (req, res) {
 		});
 	
 	else if (pathname.indexOf('/client/') === 0)
-		serveStatic('./client', pathname.substr('/client/'.length), req, res);
+		serveStatic(__dirname + '/client', pathname.substr('/client/'.length), req, res);
 	
 	else if (pathname.indexOf('/katex/') === 0)
 		serveStatic(path.dirname(require.resolve('katex')), pathname.substr('/katex/'.length), req, res);
@@ -39,6 +39,7 @@ fs.watch(file, function () {
 });
 
 server.listen(0, function () {
+	console.log('http://localhost:' + server.address().port);
 	open('http://localhost:' + server.address().port);
 });
 
